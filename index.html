@@ -1,0 +1,1898 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="설정">
+<meta name="color-scheme" content="light dark">
+<meta name="theme-color" content="#000000" id="themeColor">
+<!-- 홈 화면 아이콘: 같은 폴더의 icon.png (180x180). 바꾸고 싶으면 같은 이름으로 덮어쓰면 돼요 -->
+<link rel="apple-touch-icon" href="icon.png">
+<title>설정</title>
+<style>
+:root{--bg:#F2F2F7;--sidebg:linear-gradient(180deg,#F8F8FA 0%,#EFEFF3 100%);--card:#fff;--text:#000;--sub:#6C6C70;--hdr:#6C6C70;--sep:rgba(60,60,67,.2);--chev:#B4B4B9;--press:rgba(120,120,128,.18);--sel:rgba(120,120,128,.16);--blue:#007AFF;--green:#34C759;--red:#FF3B30;--off:rgba(120,120,128,.2);--field:rgba(120,120,128,.1);--fieldb:rgba(0,0,0,.04);--glass:rgba(255,255,255,.75);--glassb:rgba(0,0,0,.06);--bar:rgba(242,242,247,.8);--bar1:#D1D1D6;--bar2:#8E8E93;--radius:26px;--sidew:clamp(300px,39vw,400px)}
+html.dark{--bg:#000;--sidebg:linear-gradient(180deg,#282C32 0%,#1F2227 45%,#1A1C20 100%);--card:#1C1C1E;--text:#fff;--sub:#98989F;--hdr:#98989F;--sep:rgba(84,84,88,.55);--chev:#5B5B60;--press:rgba(255,255,255,.08);--sel:rgba(255,255,255,.1);--blue:#0A84FF;--green:#30D158;--red:#FF453A;--off:rgba(120,120,128,.36);--field:rgba(255,255,255,.07);--fieldb:rgba(255,255,255,.12);--glass:rgba(44,44,48,.75);--glassb:rgba(255,255,255,.12);--bar:rgba(0,0,0,.6);--bar1:#3A3A3C;--bar2:#636366}
+@media (prefers-color-scheme:dark){html.auto{--bg:#000;--sidebg:linear-gradient(180deg,#282C32 0%,#1F2227 45%,#1A1C20 100%);--card:#1C1C1E;--text:#fff;--sub:#98989F;--hdr:#98989F;--sep:rgba(84,84,88,.55);--chev:#5B5B60;--press:rgba(255,255,255,.08);--sel:rgba(255,255,255,.1);--blue:#0A84FF;--green:#30D158;--red:#FF453A;--off:rgba(120,120,128,.36);--field:rgba(255,255,255,.07);--fieldb:rgba(255,255,255,.12);--glass:rgba(44,44,48,.75);--glassb:rgba(255,255,255,.12);--bar:rgba(0,0,0,.6);--bar1:#3A3A3C;--bar2:#636366}}
+
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;background:var(--bg)}
+body{color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Apple SD Gothic Neo","Noto Sans KR",system-ui,sans-serif;-webkit-font-smoothing:antialiased;-webkit-text-size-adjust:100%;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;-webkit-tap-highlight-color:transparent;touch-action:manipulation;overflow:hidden}
+button{font:inherit;color:inherit;border:0;background:none;margin:0;padding:0;text-align:inherit}
+
+/* 화면 배치: 좁으면(폰) 밀어서 들어가기, 넓으면(아이패드) 왼쪽 목록 + 오른쪽 화면 */
+.app{position:fixed;inset:0;overflow:hidden;background:var(--bg)}
+.pane{position:absolute;top:0;bottom:0;left:0;width:100%;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;background:var(--bg);transition:transform .45s cubic-bezier(.32,.72,0,1)}
+.list{padding:0 calc(env(safe-area-inset-right) + 16px) calc(env(safe-area-inset-bottom) + 40px) calc(env(safe-area-inset-left) + 16px)}
+.detail{transform:translateX(100%);padding:0 calc(env(safe-area-inset-right) + 20px) calc(env(safe-area-inset-bottom) + 48px) calc(env(safe-area-inset-left) + 20px)}
+.app.open .list{transform:translateX(-30%)}
+.app.open .detail{transform:none}
+.app.dragging .pane{transition:none}
+
+/* 왼쪽 목록 */
+.lnav{position:sticky;top:0;z-index:3;display:flex;align-items:center;justify-content:center;height:calc(env(safe-area-inset-top) + 50px);padding-top:env(safe-area-inset-top);margin:0 calc(-16px - env(safe-area-inset-right)) 0 calc(-16px - env(safe-area-inset-left));transition:background-color .2s}
+.lnav.scrolled{background:var(--bar);-webkit-backdrop-filter:blur(20px) saturate(180%);backdrop-filter:blur(20px) saturate(180%)}
+.lnt{font-size:17px;font-weight:600;opacity:0;transition:opacity .2s}
+.lnav.scrolled .lnt{opacity:1}
+h1{margin:0 0 12px 4px;font-size:34px;font-weight:700;letter-spacing:.3px}
+.shead{margin-bottom:22px}
+.search{display:flex;align-items:center;gap:8px;height:44px;padding:0 12px 0 14px;border-radius:22px;background:var(--field);box-shadow:inset 0 0 0 1px var(--fieldb);color:var(--sub)}
+.search>svg,.smic svg{flex:none;width:20px;height:20px}
+.search input{flex:1;min-width:0;height:100%;padding:0;border:0;outline:0;background:transparent;font:inherit;font-size:17px;color:var(--text);-webkit-user-select:text;user-select:text;-webkit-appearance:none;appearance:none}
+.search input::placeholder{color:var(--sub)}
+.search input::-webkit-search-cancel-button{display:none}
+.smic{display:flex;color:var(--sub)}
+.sclear{display:none;width:24px;height:24px;align-items:center;justify-content:center;color:var(--sub);cursor:pointer}
+.sclear svg{width:20px;height:20px}
+.search.has .sclear{display:flex}
+.search.has .smic{display:none}
+.groups{display:flex;flex-direction:column;gap:28px}
+.groups[hidden],#results[hidden]{display:none}
+.c{background:var(--card);border-radius:var(--radius);overflow:hidden}
+.r{position:relative;display:flex;align-items:center;gap:14px;width:100%;min-height:52px;padding:0 16px;text-align:left;cursor:pointer}
+.r:active{background:var(--press)}
+.r.x,.r.x:active{background:none;cursor:default}
+.c .r+.r::before{content:"";position:absolute;top:0;left:58px;right:16px;height:.5px;background:var(--sep)}
+.rl{flex:1;min-width:0;font-size:17px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rv{font-size:17px;color:var(--sub);white-space:nowrap}
+.rb{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+.rt{font-size:17px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rp{font-size:13px;color:var(--sub);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pf .r{min-height:84px}
+.pn{font-size:19px;font-weight:600;letter-spacing:-.2px}
+.ps{font-size:14px;color:var(--sub)}
+.nores{padding:40px 20px;text-align:center;font-size:17px;color:var(--sub)}
+.chev{flex:none;width:8px;height:8px;margin:0 4px 0 2px;border-top:2px solid var(--chev);border-right:2px solid var(--chev);transform:rotate(45deg)}
+
+/* 아이콘 칸 */
+.i{flex:none;position:relative;width:28px;height:28px;border-radius:7px;display:flex;align-items:center;justify-content:center;color:#fff;background-image:linear-gradient(180deg,rgba(255,255,255,.22),rgba(255,255,255,0) 70%);box-shadow:inset 0 0 0 .5px rgba(255,255,255,.16)}
+.i svg{width:18px;height:18px}
+.i .tx{font-size:11px;font-weight:700;letter-spacing:-.2px;line-height:1}
+.i.lg{width:60px;height:60px;border-radius:14px}
+.i.lg svg{width:38px;height:38px}
+.i.lg .tx{font-size:22px}
+.av{flex:none;width:60px;height:60px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-size:22px;font-weight:700;letter-spacing:-.5px;background:linear-gradient(180deg,#A9B1E2,#6F78B9)}
+.av.lg{width:88px;height:88px;font-size:32px}
+
+/* 스위치 (눌러도 안 바뀜) */
+.tg{flex:none;position:relative;width:62px;height:28px;border-radius:14px;background:var(--off)}
+.tg i{position:absolute;top:2px;left:2px;width:38px;height:24px;border-radius:12px;background:#fff;box-shadow:0 2px 6px rgba(0,0,0,.2)}
+.tg.on{background:var(--green)}
+.tg.on i{left:22px}
+
+/* 오른쪽 화면 */
+.dnav{position:sticky;top:0;z-index:3;display:flex;align-items:center;justify-content:space-between;height:calc(env(safe-area-inset-top) + 56px);padding:env(safe-area-inset-top) calc(env(safe-area-inset-right) + 16px) 0 calc(env(safe-area-inset-left) + 16px);margin:0 calc(-20px - env(safe-area-inset-right)) 0 calc(-20px - env(safe-area-inset-left))}
+.dnav::before{content:"";position:absolute;inset:0 0 -24px;background:var(--bar);-webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px);-webkit-mask-image:linear-gradient(#000 60%,transparent);mask-image:linear-gradient(#000 60%,transparent);opacity:0;transition:opacity .2s;pointer-events:none}
+.dnav.scrolled::before{opacity:1}
+.dt{position:absolute;left:120px;right:120px;bottom:0;height:56px;margin:0;line-height:56px;text-align:center;font-size:17px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;opacity:0;transition:opacity .2s;pointer-events:none}
+.dnav.titled .dt,.dnav.fixed .dt{opacity:1}
+.gbtn{position:relative;z-index:1;display:flex;align-items:center;justify-content:center;height:44px;min-width:44px;padding:0 18px;border-radius:22px;background:var(--glass);box-shadow:inset 0 0 0 1px var(--glassb),0 6px 16px rgba(0,0,0,.12);-webkit-backdrop-filter:blur(12px) saturate(160%);backdrop-filter:blur(12px) saturate(160%);font-size:17px;font-weight:600;cursor:pointer}
+.gbtn:active{transform:scale(.94)}
+.back{width:44px;padding:0}
+.back svg{width:12px;height:20px}
+.dcontent{max-width:900px;margin:24px auto 0}
+.dcontent.anim-push{animation:push .34s cubic-bezier(.32,.72,0,1)}
+.dcontent.anim-pop{animation:pop .34s cubic-bezier(.32,.72,0,1)}
+@keyframes push{from{transform:translateX(36px);opacity:0}}
+@keyframes pop{from{transform:translateX(-36px);opacity:0}}
+.sec{margin-top:36px}
+.sec:first-child{margin-top:0}
+.card{position:relative;background:var(--card);border-radius:var(--radius);overflow:hidden}
+.sh{display:flex;align-items:center;gap:10px;margin:0 20px 10px;font-size:17px;font-weight:600;color:var(--hdr)}
+.foot{margin:10px 20px 0;font-size:14px;line-height:1.4;color:var(--sub)}
+.foot p{margin:0 0 14px;white-space:pre-line}
+.foot p:last-child{margin:0}
+.lnk{color:var(--blue)}
+.dng{color:var(--red)}
+.hero .hh{padding:20px 20px 18px}
+.hero .ht{margin-top:16px;font-size:26px;font-weight:700;letter-spacing:-.3px}
+.hero .hd{margin-top:6px;font-size:17px;line-height:1.38;color:var(--sub);white-space:pre-line}
+.hero.center .hh{display:flex;flex-direction:column;align-items:center;text-align:center;padding-top:28px}
+.hero.center .ht{margin-top:12px}
+.ir{position:relative;display:flex;align-items:center;gap:14px;min-height:52px;padding:0 20px}
+.ir.tap{cursor:pointer}
+.ir.tap:active{background:var(--press)}
+.card .ir+.ir::before,.hrows .ir::before,.inote::before{content:"";position:absolute;top:0;left:var(--sl,20px);right:20px;height:.5px;background:var(--sep)}
+.ir.hasi{--sl:62px}
+.ir.ind{padding-left:48px;--sl:48px}
+.ir.two{min-height:62px;padding-top:8px;padding-bottom:8px}
+.ib{flex:1;min-width:0;display:flex;align-items:center;gap:8px}
+.itx{flex:1;min-width:0}
+.il{display:block;font-size:17px;line-height:1.25}
+.isub{display:block;margin-top:2px;font-size:14px;color:var(--sub)}
+.iv{font-size:17px;color:var(--sub);white-space:nowrap;max-width:55%;overflow:hidden;text-overflow:ellipsis}
+.info{flex:none;width:26px;height:26px;color:var(--blue)}
+.ud{flex:none;width:10px;height:18px;color:var(--sub)}
+.ck{flex:none;width:22px;height:22px;color:var(--blue)}
+.inote{position:relative;padding:12px 20px 16px 62px;font-size:15px;line-height:1.4;color:var(--sub)}
+.flash{animation:flash 1.6s ease}
+@keyframes flash{0%,35%{background:var(--sel)}100%{background:transparent}}
+.spin{width:20px;height:20px;color:var(--hdr);animation:spin .9s steps(8) infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.sld{gap:14px;min-height:60px;color:var(--sub)}
+.sld svg{flex:none}
+.sld .se{flex:none;font-size:13px}
+.trk{position:relative;flex:1;height:6px;border-radius:3px;background:var(--off)}
+.trk i{position:absolute;left:0;top:0;bottom:0;border-radius:3px;background:var(--blue)}
+.trk b{position:absolute;top:50%;width:36px;height:24px;margin:-12px 0 0 -18px;border-radius:12px;background:#fff;box-shadow:0 2px 8px rgba(0,0,0,.25)}
+
+/* 특별한 카드들 */
+.bat{padding:22px 20px 24px}
+.bpct{font-size:46px;font-weight:700;letter-spacing:-1px;line-height:1}
+.bpct small{margin-left:2px;font-size:18px;font-weight:600;letter-spacing:0}
+.blast{margin-top:14px;font-size:14px;font-weight:600}
+.bbar{margin-top:12px;height:10px;border-radius:5px;background:var(--off);overflow:hidden}
+.bbar i{display:block;height:100%;border-radius:5px;background:var(--bar2);transition:background-color .3s}
+.bbar i.low{background:#FFCC00}
+.binfo{position:absolute;top:18px;right:20px;width:22px;height:22px;color:var(--sub)}
+.ubold{padding:16px 16px 14px;font-size:15px;font-weight:600}
+.useb{padding:0 16px}
+.useb .ir{padding:0}
+.useb .ir.hasi{--sl:42px}
+.card .ulist .ir::before{content:"";position:absolute;top:0;left:0;right:0;height:.5px;background:var(--sep)}
+.usep{height:.5px;background:var(--sep)}
+.ustats{display:flex;gap:44px;padding-top:16px}
+.ustats span{display:block;font-size:13px;font-weight:600;color:var(--sub)}
+.ustats b{display:block;margin-top:2px;font-size:26px;font-weight:600}
+.ustats small{font-size:15px}
+.ustats .tdy span,.ustats .tdy b{color:var(--blue)}
+.uchart{position:relative;display:flex;align-items:flex-end;gap:15px;height:110px;margin-top:12px;border-bottom:1px solid var(--sep)}
+.ubar{position:relative;width:21px;border-radius:6px 6px 0 0;background:var(--bar1);overflow:hidden}
+.ubar i{position:absolute;left:0;right:0;bottom:0;background:var(--bar2)}
+.ubar.tdy{background:transparent}
+.ubar.tdy i{background:var(--blue);border-radius:6px 6px 0 0}
+.uavg{position:absolute;right:0;bottom:6px;font-size:12px;color:var(--sub)}
+.udays{display:flex;gap:15px;margin-top:6px}
+.udays span{width:21px;text-align:center;font-size:12px;color:var(--sub)}
+.udays .tdy{color:var(--blue)}
+.uleg{display:flex;flex-wrap:wrap;gap:6px 18px;margin-top:16px;font-size:12px;color:var(--sub)}
+.uleg i{display:inline-block;width:8px;height:8px;margin-right:6px;border-radius:50%;background:var(--bar1)}
+.uleg i.d2{background:var(--bar2)}
+.usub{margin:26px 0 10px;font-size:17px;font-weight:600;color:var(--hdr)}
+.dq{position:relative;z-index:1;display:flex;align-items:center;gap:8px;width:min(280px,50%);height:44px;margin-left:auto;padding:0 12px 0 14px;border-radius:22px;background:var(--glass);box-shadow:inset 0 0 0 1px var(--glassb);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);color:var(--sub)}
+.dq[hidden]{display:none}
+.dq svg{flex:none;width:20px;height:20px}
+.dq input{flex:1;min-width:0;height:100%;padding:0;border:0;outline:0;background:transparent;font:inherit;font-size:17px;color:var(--text);-webkit-user-select:text;user-select:text;-webkit-appearance:none;appearance:none}
+.dq input::placeholder{color:var(--sub)}
+.dq input::-webkit-search-cancel-button{display:none}
+.dcontent .nores{padding:60px 20px}
+@media (min-width:700px){.dnav.lt .dt{left:20px;right:auto;text-align:left;opacity:1}.dnav.lt .back{display:none}}
+@media (max-width:699px){.dnav.lt .dt{opacity:0}.dq{flex:1;width:auto;margin-left:12px}}
+.sheet{position:fixed;inset:0;z-index:40;display:flex;align-items:center;justify-content:center;padding:24px;background:rgba(0,0,0,.45);animation:fadein .25s}
+.sheet[hidden]{display:none}
+.sbox{width:min(560px,100%);max-height:calc(100% - 48px);overflow:auto;padding:52px 36px 32px;border-radius:36px;background:var(--card);box-shadow:0 20px 60px rgba(0,0,0,.4);animation:sheetin .34s cubic-bezier(.32,.72,0,1)}
+@keyframes fadein{from{opacity:0}}
+@keyframes sheetin{from{transform:translateY(40px) scale(.98);opacity:0}}
+.sic{display:flex;justify-content:center;color:var(--blue)}
+.sic svg{width:76px;height:76px}
+.sbox h2{margin:30px 0 6px;font-size:22px;font-weight:700}
+.sd{font-size:17px;line-height:1.4;color:var(--sub)}
+.sfeat{display:flex;align-items:flex-start;gap:16px;margin-top:22px;color:var(--blue)}
+.sfeat svg{flex:none;width:34px;height:34px}
+.sfeat b{display:block;font-size:16px;font-weight:600;color:var(--text)}
+.sfeat span{display:block;margin-top:2px;font-size:15px;line-height:1.35;color:var(--sub)}
+.sbtns{display:flex;flex-direction:column;gap:10px;max-width:390px;margin:36px auto 0}
+.sbtn{display:flex;align-items:center;justify-content:center;width:100%;height:50px;border-radius:25px;font-size:17px;font-weight:600;text-align:center;cursor:pointer}
+.sbtn.pri{background:var(--blue);color:#fff}
+.sbtn.alt{background:var(--off);color:var(--text)}
+.sbtn:active{transform:scale(.97)}
+.fld{display:flex;align-items:center;gap:10px;min-height:52px;padding:0 16px 0 20px;font-size:17px}
+.fld span{flex:1}
+.fld svg{flex:none;width:20px;height:20px;color:var(--chev)}
+.alerts{display:flex;justify-content:space-around;padding:22px 12px 18px}
+.alerts figure{margin:0;display:flex;flex-direction:column;align-items:center;gap:8px;font-size:14px}
+.alerts.dim figure{opacity:.4}
+.amock{position:relative;width:66px;height:94px;border-radius:12px;background:var(--off);overflow:hidden}
+.amock i{position:absolute;left:7px;right:7px;height:12px;border-radius:5px;background:var(--sub);opacity:.55}
+.cmsg{padding:30px 24px;text-align:center}
+.cmsg .t1{font-size:22px;font-weight:700}
+.cmsg .t2{margin-top:6px;font-size:15px;line-height:1.4;color:var(--sub)}
+.stor{padding:18px 20px 20px}
+.stor .st{display:flex;justify-content:space-between;align-items:baseline;gap:12px;font-size:17px;font-weight:600}
+.stor .su{font-size:15px;font-weight:400;color:var(--sub)}
+.sbar{display:flex;gap:2px;height:22px;margin-top:12px;border-radius:6px;overflow:hidden;background:var(--off)}
+.sbar i{display:block;height:100%}
+.sleg{display:flex;flex-wrap:wrap;gap:6px 16px;margin-top:12px;font-size:13px;color:var(--sub)}
+.sleg b{display:inline-block;width:9px;height:9px;margin-right:6px;border-radius:50%}
+.appr{display:flex;justify-content:center;gap:48px;padding:24px 20px 20px}
+.appr figure{margin:0;display:flex;flex-direction:column;align-items:center;gap:10px;font-size:15px}
+.mock{width:86px;height:118px;padding:12px 9px;border-radius:14px;display:flex;flex-direction:column;gap:6px;box-shadow:inset 0 0 0 1px var(--glassb)}
+.mock i{display:block;height:9px;border-radius:5px}
+.mock.lt{background:#F2F2F7}.mock.lt i{background:#fff}
+.mock.dk{background:#1C1C1E}.mock.dk i{background:#3A3A3C}
+.mock i:first-child{width:60%;height:12px}
+.radio{width:24px;height:24px;border-radius:50%;box-shadow:inset 0 0 0 1.5px var(--chev);display:flex;align-items:center;justify-content:center}
+.radio.on{box-shadow:none;background:var(--blue);color:#fff}
+.radio svg{width:14px;height:14px}
+.wall{display:flex;justify-content:center;gap:20px;padding:24px 20px 20px}
+.wall figure{margin:0;display:flex;flex-direction:column;align-items:center;gap:12px}
+.wp{position:relative;width:126px;height:176px;border-radius:16px;overflow:hidden;color:#fff;background:radial-gradient(circle at 30% 20%,#7A8CE8 0%,transparent 55%),radial-gradient(circle at 80% 85%,#E86A9A 0%,transparent 50%),linear-gradient(160deg,#3A4A9A,#161B3D)}
+.wp .wt{position:absolute;top:22px;left:0;right:0;text-align:center;font-size:34px;font-weight:600;letter-spacing:-.5px}
+.wp .wdate{position:absolute;top:12px;left:0;right:0;text-align:center;font-size:9px;font-weight:600;opacity:.9}
+.wp .wg{position:absolute;inset:18px 14px auto;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:9px}
+.wp .wg i{display:block;aspect-ratio:1;border-radius:5px;background:rgba(255,255,255,.32)}
+.pill{height:34px;padding:0 16px;border-radius:17px;background:var(--off);font-size:15px;font-weight:600;display:flex;align-items:center}
+.prep{padding:26px 24px 24px;text-align:center}
+.prep svg{width:64px;height:64px;color:var(--blue)}
+.prep .t1{margin-top:10px;font-size:20px;font-weight:700}
+.prep .t2{margin-top:6px;font-size:15px;line-height:1.4;color:var(--sub)}
+.prep .t3{margin-top:14px;font-size:17px;color:var(--blue)}
+
+/* 켜고 끄기 효과 */
+.tg{transition:background-color .25s}
+.tg i{transition:left .25s cubic-bezier(.3,.7,.4,1)}
+.r[data-tg]{cursor:pointer}
+.trk{touch-action:none;cursor:pointer}
+.trk::after{content:"";position:absolute;left:-10px;right:-10px;top:-16px;bottom:-16px}
+.lk{flex:none;width:13px;height:16px;color:var(--text)}
+.wbars{flex:none;width:20px;height:16px;color:var(--text)}
+.afig,.appr figure{cursor:pointer}
+.dcontent,#menu,#results{zoom:var(--tz,1)}
+#tint{position:fixed;inset:0;z-index:50;background:#FF8A00;mix-blend-mode:multiply;opacity:0;pointer-events:none;transition:opacity .3s}
+#dim{position:fixed;inset:0;z-index:51;background:#000;opacity:0;pointer-events:none}
+#toast{position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom) + 28px);z-index:60;padding:12px 20px;border-radius:22px;background:var(--glass);box-shadow:inset 0 0 0 1px var(--glassb),0 8px 24px rgba(0,0,0,.2);-webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px);color:var(--text);font-size:15px;font-weight:600;opacity:0;transform:translate(-50%,16px);transition:opacity .25s,transform .25s;pointer-events:none}
+#toast.show{opacity:1;transform:translate(-50%,0)}
+html.boldtext body{font-weight:600}
+html.boldtext .il,html.boldtext .rl,html.boldtext .rt,html.boldtext .iv,html.boldtext .rv,html.boldtext .foot,html.boldtext .hd,html.boldtext .isub,html.boldtext .ps,html.boldtext .rp{font-weight:600}
+html.btnshape .lnk{text-decoration:underline}
+html.btnshape .gbtn{box-shadow:inset 0 0 0 1.5px var(--blue)}
+html.oolabel .tg.on::before{content:"";position:absolute;left:13px;top:9px;width:2px;height:10px;border-radius:1px;background:#fff}
+html.oolabel .tg:not(.on)::before{content:"";position:absolute;right:11px;top:9.5px;width:9px;height:9px;border-radius:50%;box-shadow:inset 0 0 0 1.5px var(--sub)}
+html.notransp .dnav::before,html.notransp .lnav.scrolled{-webkit-backdrop-filter:none;backdrop-filter:none;background:var(--bg)}
+html.notransp .shead{-webkit-backdrop-filter:none;backdrop-filter:none}
+html.notransp .gbtn,html.notransp #toast{-webkit-backdrop-filter:none;backdrop-filter:none;background:var(--card)}
+html.notransp .search{background:var(--card)}
+html.contrast{--sep:rgba(128,128,128,.9);--chev:var(--sub)}
+html.contrast .iv,html.contrast .rv,html.contrast .foot,html.contrast .sh,html.contrast .isub,html.contrast .ps,html.contrast .hd,html.contrast .rp{color:var(--text)}
+html.nomotion *,html.nomotion *::before,html.nomotion *::after{transition:none!important;animation:none!important}
+html.nomotion .spin{animation:spin .9s steps(8) infinite!important}
+
+/* 아이패드(넓은 화면) */
+@media (min-width:700px){
+  .list{width:var(--sidew);background:var(--sidebg);padding-right:16px;transform:none!important;z-index:1}
+  .detail{left:var(--sidew);right:0;width:auto;transform:none!important;z-index:0}
+  .lnav,h1{display:none}
+  .shead{position:sticky;top:0;z-index:3;margin:0 -16px 10px calc(-16px - env(safe-area-inset-left));padding:calc(env(safe-area-inset-top) + 56px) 16px 14px calc(env(safe-area-inset-left) + 16px);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);-webkit-mask-image:linear-gradient(#000 80%,transparent);mask-image:linear-gradient(#000 80%,transparent)}
+  .groups{gap:12px}
+  .list .c{background:none;border-radius:0;overflow:visible}
+  .list .c .r+.r::before{display:none}
+  .list .r{border-radius:26px;padding:0 14px}
+  .list .r:active,.list .r.on{background:var(--sel)}
+  .list .r.x:active{background:none}
+  .list .chev{display:none}
+  .back{visibility:hidden}
+  .dnav.canback .back{visibility:visible}
+}
+</style>
+</head>
+<body>
+<div class="app" id="app">
+  <main class="pane list" id="list" aria-label="설정 목록">
+    <div class="lnav" id="lnav" aria-hidden="true"><div class="lnt">설정</div></div>
+    <h1>설정</h1>
+    <div class="shead">
+      <label class="search" id="search">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M15.5 15.5 20 20"/></svg>
+        <input id="q" type="search" placeholder="검색" aria-label="설정 검색" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" enterkeyhint="search">
+        <button type="button" class="sclear" id="qclear" aria-label="검색어 지우기"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10" fill="currentColor"/><path d="M8.5 8.5l7 7M15.5 8.5l-7 7" stroke="var(--card)" stroke-width="2" stroke-linecap="round"/></svg></button>
+        <span class="smic"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 14c1.66 0 2.99-1.34 2.99-3L15 5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3zm5.3-3c0 3-2.54 5.1-5.3 5.1S6.7 14 6.7 11H5c0 3.41 2.72 6.23 6 6.72V21h2v-3.28c3.28-.48 6-3.3 6-6.72h-1.7z"/></svg></span>
+      </label>
+    </div>
+    <div class="groups" id="menu"></div>
+    <div id="results" hidden></div>
+  </main>
+  <section class="pane detail" id="detail">
+    <header class="dnav" id="dnav">
+      <button class="gbtn back" id="back" type="button" aria-label="뒤로"><svg viewBox="0 0 12 20" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 2 2 10l8 8"/></svg></button>
+      <h2 class="dt" id="dt"></h2>
+      <label class="dq" id="dq" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M15.5 15.5 20 20"/></svg><input id="dqi" type="search" placeholder="앱 검색" aria-label="앱 검색" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" enterkeyhint="search"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 14c1.66 0 2.99-1.34 2.99-3L15 5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3zm5.3-3c0 3-2.54 5.1-5.3 5.1S6.7 14 6.7 11H5c0 3.41 2.72 6.23 6 6.72V21h2v-3.28c3.28-.48 6-3.3 6-6.72h-1.7z"/></svg></label>
+      <button class="gbtn" id="dbtn" type="button"></button>
+    </header>
+    <div class="dcontent" id="dcontent"></div>
+  </section>
+  <div id="sheet" class="sheet" hidden></div>
+</div>
+<div id="tint" aria-hidden="true"></div>
+<div id="dim" aria-hidden="true"></div>
+<div id="toast" role="status" aria-live="polite"></div>
+
+<script>
+/* ==========================================================
+   여기서부터 고치면 돼요
+   ========================================================== */
+
+const SETTINGS = {
+  theme: 'auto',      // 'auto' = 기기 다크 모드 따라감 / 'light' = 항상 밝게 / 'dark' = 항상 어둡게
+  radius: 26,         // 카드 모서리 둥글기(px)
+  startPage: '일반',  // 아이패드에서 처음 열려 있을 메뉴 이름 (그다음부터는 마지막에 본 화면)
+};
+
+const PROFILE = { name: '정경훈', sub: 'Apple 계정, iCloud+ 등', initial: '경훈' };
+
+// 일반 > 정보 화면 등에 나오는 기기 정보. 실제 아이패드 '정보' 화면을 보고 맞춰 주세요.
+const DEVICE = {
+  name: '정경훈의 iPad',
+  os: '27.2.1',
+  model: 'iPad Air(5세대)',
+  modelNumber: 'MM713KH/A',
+  serial: 'FFG3WL649Y',        // 공개 저장소에 올리면 누구나 볼 수 있어요. 숨기려면 '' 로 비우세요
+  warranty: '보증이 만료됨',
+  songs: '2',
+  videos: '292',
+  photos: '7,011',
+  apps: '75',
+  capacity: '256GB',
+  free: '23.36GB',
+  wifiAddress: 'B0:E5:EF:67:68:24',
+  btAddress: 'B0:E5:EF:68:B6:06',
+};
+
+// 실제 앱 이름을 띄우지 않고, 설치된 앱을 카테고리로 묶어서 보여 줘요 (count 합계 = DEVICE.apps)
+//   알림·앱·개인정보·검색 화면의 목록에 이 카테고리들이 나와요
+//   notify 알림 스타일 / location 위치 접근 / photos 사진 접근 / camera·mic 카메라·마이크 허용
+const APPS = [
+  { name: '소셜', count: 9, icon: 'speech', color: '#34C759', notify: '배너, 사운드, 배지', location: '사용하는 동안', photos: '선택한 사진', camera: true, mic: true },
+  { name: '생산성 및 금융', count: 14, icon: 'briefcase', color: '#007AFF', notify: '배너, 배지', location: '안 함', photos: '없음', camera: true, mic: false },
+  { name: '교육', count: 8, icon: 'book', color: '#FF9500', notify: '배너', location: '안 함', photos: '없음', camera: false, mic: true },
+  { name: '엔터테인먼트', count: 10, icon: 'tv', color: '#FF2D55', notify: '배너, 사운드', location: '안 함', photos: '없음', camera: false, mic: false },
+  { name: '게임', count: 6, icon: 'gamepad', color: '#5E5CE6', notify: '끔', location: '안 함', photos: '없음', camera: false, mic: false },
+  { name: '창의력', count: 4, icon: 'pencil', color: '#AF52DE', notify: '배너', location: '안 함', photos: '전체 접근', camera: true, mic: false },
+  { name: '정보 및 독서', count: 7, icon: 'doc', color: '#8E8E93', notify: '배너, 배지', location: '안 함', photos: '없음', camera: false, mic: false },
+  { name: '쇼핑 및 음식', count: 6, icon: 'bag', color: '#FF3B30', notify: '배너, 배지', location: '사용하는 동안', photos: '없음', camera: false, mic: false },
+  { name: '유틸리티', count: 11, icon: 'toggles', color: '#30B0C7', notify: '배너', location: '사용하는 동안', photos: '선택한 사진', camera: true, mic: true },
+];
+
+// 배터리 성능 상태 화면에 나오는 최대 용량
+const BATTERY = { health: '96%' };
+
+// Wi-Fi를 켜면 '다른 네트워크' 옆 표시가 돌면서 검색만 하고, 아무 네트워크도 나오지 않아요.
+// 나중에 네트워크가 나타나게 하고 싶으면 여기에 넣으면 돼요. 예) { name: 'iptime', lock: true, bars: 3 }
+const NETWORKS = [];
+
+// 처음 상태 (나중에 바꾼 값은 아이패드에 저장돼서 다음에 열어도 그대로예요)
+const DEFAULTS = {
+  airplane: false,   // 에어플레인 모드
+  wifi: false,       // Wi-Fi
+  bt: true,          // Bluetooth
+  brightness: 0.5,   // 밝기 막대 (0~1, 0.5가 원래 밝기)
+  textSize: 0.5,     // 텍스트 크기 막대 (0.5가 기본)
+  volume: 0.6,       // 음량 막대 (알림음 미리듣기 소리 크기)
+  nightTemp: 0.5,    // Night Shift 색 온도
+  speechRate: 0.5,   // 말하기 속도
+  balance: 0.5,      // 왼쪽/오른쪽 소리 밸런스
+};
+
+// 일반 > iPad 저장 공간 화면 (size 단위 GB, 막대 길이에 쓰여요)
+const STORAGE = {
+  label: 'iPad',
+  total: 256,
+  parts: [
+    { name: '앱', size: 118.4, color: '#FF3B30' },
+    { name: '사진', size: 72.6, color: '#FFCC00' },
+    { name: 'iPadOS', size: 11.8, color: '#8E8E93' },
+    { name: '시스템 데이터', size: 29.84, color: '#C7C7CC' },
+  ],
+  apps: [
+    { name: '게임', size: '38.2GB' },
+    { name: '엔터테인먼트', size: '24.6GB' },
+    { name: '소셜', size: '17.9GB' },
+    { name: '생산성 및 금융', size: '14.3GB' },
+    { name: '교육', size: '9.8GB' },
+    { name: '유틸리티', size: '6.1GB' },
+  ],
+};
+
+// 프로필 > iCloud 화면 저장 공간 (GB)
+const ICLOUD = {
+  label: 'iCloud',
+  total: 5,
+  parts: [
+    { name: '사진', size: 1.1, color: '#FFCC00' },
+    { name: '백업', size: 0.6, color: '#AF52DE' },
+    { name: '기타', size: 0.3, color: '#8E8E93' },
+  ],
+};
+
+// ---------- 왼쪽 메뉴 ----------
+// [ ] 하나 = 묶음 하나, { } 한 줄 = 메뉴 하나.
+//   title 이름 / color 아이콘 배경색 / fg 아이콘 그림 색(기본 흰색) / icon 아래 ICONS 이름 / text 아이콘 대신 글자
+//   value 오른쪽 회색 글씨 / valueFrom '@이름' 그 스위치에 따라 valueOn/valueOff 글씨
+//   toggle 넣으면 스위치 줄 (처음 값), key 스위치 이름 (예: 'airplane')
+const GROUPS = [
+  [
+    { title: '에어플레인 모드', color: '#FF9500', icon: 'airplane', toggle: false, key: 'airplane' },
+    { title: 'Wi-Fi', color: '#007AFF', icon: 'wifi', valueFrom: '@wifi', valueOn: '연결되지 않음', valueOff: '끔' },
+    { title: 'Bluetooth', color: '#007AFF', icon: 'bluetooth', valueFrom: '@bt', valueOn: '켬', valueOff: '끔' },
+    { title: '배터리', color: '#34C759', icon: 'battery' },
+  ],
+  [
+    { title: '일반', color: '#8E8E93', icon: 'gear' },
+    { title: '손쉬운 사용', color: '#007AFF', icon: 'access' },
+    { title: '검색', color: '#8E8E93', icon: 'search' },
+    { title: '디스플레이 및 밝기', color: '#007AFF', icon: 'sun' },
+    { title: '멀티태스킹 및 제스처', color: '#007AFF', icon: 'multitask' },
+    { title: '배경화면', color: '#2FB4E8', icon: 'flower' },
+    { title: '제어 센터', color: '#8E8E93', icon: 'toggles' },
+    { title: '카메라', color: '#8E8E93', icon: 'camera' },
+    { title: '홈 화면 및 앱 보관함', color: '#007AFF', icon: 'homescreen' },
+    { title: '화면 모드', color: '#000000', icon: 'mode' },
+    { title: 'Apple Pencil', color: '#8E8E93', icon: 'pencil' },
+  ],
+  [
+    { title: '알림', color: '#FF3B30', icon: 'bell' },
+    { title: '사운드', color: '#FF2D55', icon: 'speaker' },
+    { title: '집중 모드', color: '#5E5CE6', icon: 'moon' },
+    { title: '스크린 타임', color: '#5E5CE6', icon: 'hourglass' },
+  ],
+  [
+    { title: 'Touch ID 및 암호', color: '#FFFFFF', fg: '#FF375F', icon: 'fingerprint' },
+    { title: '개인정보 보호 및 보안', color: '#007AFF', icon: 'hand' },
+  ],
+  [
+    { title: '앱', color: '#5E5CE6', icon: 'apps' },
+  ],
+];
+
+// ---------- 화면을 짧게 쓰는 도우미들 ----------
+// pick(['2분','5분'], '5분') → 하나만 고르는 목록 (누르면 체크가 옮겨가요)
+//   세 번째 칸에 이름을 주면 다른 곳에서 그 값을 쓸 수 있어요. 예) pick([...], '기본', 'displayZoom')
+const pick = (list, on, group, extra = {}) => list.map((t) => ({ title: t, choice: true, check: t === on, group, ...extra }));
+// 여러 개를 고를 수 있는 체크 목록
+const multi = (list, onList = []) => list.map((t) => ({ title: t, multi: true, check: onList.includes(t) }));
+// 가운데 큰 글씨 + 작은 설명만 있는 화면
+const center = (a, b) => ({ sections: [{ custom: 'center', lines: [a, b] }] });
+// 스위치 하나 + 설명 화면 (key를 주면 실제 효과와 연결돼요)
+const onoff = (title, on, footer, key) => ({ sections: [{ rows: [{ title, toggle: on, key }], footer }] });
+const def = (key, val) => { if (!(key in DEFAULTS)) DEFAULTS[key] = val; return key; };
+const NOW = new Date();
+const DATE_STR = `${NOW.getFullYear()}. ${NOW.getMonth() + 1}. ${NOW.getDate()}.`;
+const appTile = (name) => { const a = APPS.find((x) => x.name === name); return a ? { icon: a.icon, color: a.color } : { text: name.slice(0, 1), color: '#636366' }; };
+const device = (name) => ({ title: name, value: '연결 안 됨', info: true,
+  page: { sections: [{ rows: [{ title: '이름', value: name }] }, { rows: [{ title: '이 기기 지우기', link: true }] }] } });
+const TONES = ['없음', '노트', '휙', '차임', '오로라', '대나무', '화음', '팝콘'];
+const tone = (title, on) => ({ title, value: on, page: { sections: [{ header: '알림음', rows: pick(TONES, on, undefined, { sound: true }) }] } });
+const notifKey = (a) => def(`notif:${a.name}`, a.notify !== '끔');
+const notifPage = (a) => {
+  const k = notifKey(a);
+  return { sections: [
+    { rows: [{ title: '알림 허용', toggle: a.notify !== '끔', key: k }] },
+    { header: '알림', custom: 'alerts', showIf: '@' + k },
+    { showIf: '@' + k, rows: [
+      { title: '배너 스타일', value: '일시적', page: { sections: [{ rows: pick(['일시적', '지속적'], '일시적'), footer: '지속적 배너는 직접 넘기기 전까지 화면에 남아 있습니다.' }] } },
+      { title: '사운드', toggle: a.notify.includes('사운드') },
+      { title: '배지', toggle: a.notify.includes('배지') },
+    ] },
+    { header: '잠금 화면 모습', showIf: '@' + k, rows: [
+      { title: '미리보기 표시', value: '잠금 해제 시', page: { sections: [{ rows: pick(['항상', '잠금 해제 시', '안 함'], '잠금 해제 시') }] } },
+      { title: '알림 그룹', value: '자동', page: { sections: [{ rows: pick(['자동', '앱별', '끔'], '자동') }] } },
+    ] },
+  ] };
+};
+const notifValue = (a) => ({ valueFrom: '@' + notifKey(a), valueOn: a.notify === '끔' ? '배너, 사운드, 배지' : a.notify, valueOff: '끔' });
+const appPage = (a) => ({ sections: [
+  { header: `${a.name} 앱 ${a.count}개에 접근 허용`, footer: '이 카테고리에 있는 모든 앱에 함께 적용됩니다.', rows: [
+    { title: '위치', value: a.location, icon: 'location', color: '#007AFF', page: { sections: [
+      { header: '위치 접근 허용', rows: pick(['안 함', '다음번에 묻기 또는 공유할 때', '사용하는 동안'], a.location) },
+      { rows: [{ title: '정확한 위치', toggle: a.location !== '안 함' }], footer: '앱이 사용자의 정확한 위치를 사용할 수 있도록 허용합니다.' },
+    ] } },
+    { title: '사진', value: a.photos, icon: 'flower', color: '#FFFFFF', fg: '#FF9500', page: { sections: [{ header: '사진 접근 허용', rows: pick(['없음', '선택한 사진', '전체 접근'], a.photos) }] } },
+    { title: '카메라', toggle: !!a.camera, key: def(`cam:${a.name}`, !!a.camera), icon: 'camera', color: '#8E8E93' },
+    { title: '마이크', toggle: !!a.mic, key: def(`mic:${a.name}`, !!a.mic), icon: 'mic', color: '#FF9500' },
+    { title: '알림', value: a.notify, ...notifValue(a), icon: 'bell', color: '#FF3B30', page: notifPage(a) },
+    { title: '백그라운드 앱 새로 고침', toggle: true, key: def(`bg:${a.name}`, true), icon: 'refresh', color: '#8E8E93' },
+  ] },
+  { header: '선호하는 언어', rows: [{ title: '언어', value: '한국어', icon: 'globe', color: '#007AFF' }] },
+] });
+const focusPage = (name, removable) => ({ sections: [
+  { header: '알림', rows: [{ title: '사람', value: '허용된 사람 없음' }, { title: '앱', value: '허용된 앱 없음' }] },
+  { rows: [{ title: '시간에 민감한 알림', toggle: true }], footer: '시간에 민감한 알림은 집중 모드 중에도 바로 전달됩니다.' },
+  { header: '사용자화된 화면', rows: [{ title: '잠금 화면 선택' }, { title: '홈 화면 선택' }] },
+  { header: '시간 지정', rows: [{ title: '시간 지정 추가', link: true }] },
+  { header: '집중 모드 필터', rows: [{ title: '필터 추가', link: true }], footer: '집중 모드가 켜져 있는 동안 앱에서 보여 줄 정보를 정할 수 있습니다.' },
+  ...(removable ? [{ rows: [{ title: `${name} 삭제`, danger: true }] }] : []),
+] });
+const permPage = (title, rowFn) => (APPS.length && rowFn
+  ? { sections: [{ rows: APPS.map(rowFn), footer: `${title} 접근을 요청한 앱이 여기에 표시됩니다.` }] }
+  : center(title, `${title} 접근을 요청한 앱이 여기에 표시됩니다.`));
+
+const APP_DEFAULT_ROW = { title: '기본 앱', sub: 'iPad의 기본 앱 관리', icon: 'webcheck', color: '#8E8E93', page: { sections: [
+  { rows: [
+    { title: '이메일', value: 'Mail', page: { sections: [{ rows: pick(['Mail'], 'Mail') }] } },
+    { title: '브라우저 앱', value: 'Safari', page: { sections: [{ rows: pick(['Safari'], 'Safari') }] } },
+    { title: '키보드', value: '3' },
+  ], footer: '링크나 이메일 주소를 누르면 여기서 고른 앱이 열립니다.' },
+] } };
+const APP_HIDDEN_ROW = { title: '숨겨진 앱', sub: '숨긴 앱 없음', icon: 'eye', color: '#8E8E93', page: center('숨겨진 앱 없음', '숨긴 앱이 여기에 표시됩니다.') };
+const APP_CAT_ROWS = APPS.map((a) => ({ title: a.name, sub: `앱 ${a.count}개`, icon: a.icon, color: a.color, page: appPage(a) }));
+
+// ---------- 안쪽 화면 ----------
+// 이름이 위 메뉴 title과 같아야 연결돼요. ('프로필'은 맨 위 이름 칸)
+//   hero: false  → 큰 아이콘 카드 없이 위쪽 가운데 제목만
+//   desc         → 큰 아이콘 카드 설명. [대괄호] 안 글씨는 파란 링크 모양, \n은 줄바꿈
+//   rows         → 큰 아이콘 카드 안에 들어가는 줄
+//   footer       → 카드 아래 회색 설명 (\n\n = 문단 나눔). [{ text, showIf }]처럼 조건을 달 수도 있어요
+//   button       → 오른쪽 위 버튼 글씨
+//   sections     → 카드 묶음들. header 위 제목 / spinner 돌아가는 표시 / rows 줄들 / footer 아래 설명
+//                  showIf: '@wifi' (wifi가 켜졌을 때만 보임), '!@wifi' (꺼졌을 때만), '알림 허용' (같은 화면의 그 스위치가 켜졌을 때만)
+// 줄(row) 옵션:
+//   value 오른쪽 회색 글씨 / toggle 스위치(처음 값) / key 스위치 이름 (같은 이름끼리 연결되고 효과가 있는 건 실제로 동작)
+//   valueFrom '@이름' → 그 스위치에 따라 valueOn/valueOff 글씨(기본 켬/끔)를 보여 줌
+//   link 파란 글씨 / danger 빨간 글씨 / info 파란 ⓘ / popup 위아래 화살표
+//   slider 0~1 막대 (ends: ['왼쪽 글씨','오른쪽 글씨'] / endIcons: 'volume' 스피커 아이콘, 없으면 해 아이콘) / sub 아래 작은 글씨 / note 아래 설명 칸
+//   icon·color·fg·text 아이콘 / indent 왼쪽 들여쓰기 / chevron:false 오른쪽 > 숨김
+//   page: { ... }  → 누르면 한 단계 더 들어가는 화면 (안쪽 내용은 위와 같은 방식)
+// 바꾼 값은 아이패드에 저장되고, 일반 > iPad 전송 또는 재설정 > 재설정 > 모든 설정 재설정으로 처음 상태로 돌아가요.
+const PAGES = {
+  '프로필': {
+    sections: [
+      { rows: [
+        { title: '개인 정보', page: { sections: [{ rows: [{ title: '이름', value: PROFILE.name }, { title: '생년월일' }] }, { rows: [{ title: '커뮤니케이션 기본 설정' }] }] } },
+        { title: '로그인 및 보안', page: { sections: [{ rows: [{ title: '이메일 및 전화번호' }, { title: '암호 변경', link: true }] }, { rows: [{ title: '이중 인증', value: '켬' }, { title: '복구 키', value: '끔' }] }] } },
+        { title: '결제 및 배송', page: { sections: [{ header: '결제 수단', rows: [{ title: '결제 수단 추가', link: true }] }, { header: '배송 주소', rows: [{ title: '배송 주소 추가', link: true }] }] } },
+        { title: '구독', page: center('구독 없음', '구독 중인 서비스가 여기에 표시됩니다.') },
+      ] },
+      { rows: [
+        { title: 'iCloud', value: '5GB', icon: 'cloud', color: '#007AFF', page: { sections: [
+          { custom: 'storage', data: 'icloud' },
+          { header: 'iCloud에 저장됨', rows: [
+            { title: '사진', value: '켬', icon: 'flower', color: '#FFFFFF', fg: '#FF9500', page: onoff('iCloud 사진', true, '모든 사진과 비디오를 iCloud에 안전하게 저장합니다.') },
+            { title: 'iCloud Drive', value: '켬', icon: 'cloud', color: '#007AFF', page: onoff('이 iPad 동기화', true) },
+            { title: '암호', value: '켬', icon: 'key', color: '#8E8E93', page: onoff('이 iPad 동기화', true) },
+          ] },
+          { rows: [{ title: 'iCloud 백업', value: '켬', icon: 'refresh', color: '#30B0C7', page: { sections: [{ rows: [{ title: '이 iPad 백업', toggle: true }], footer: 'iPad가 전원과 Wi-Fi에 연결되어 있을 때 자동으로 백업됩니다.' }, { rows: [{ title: '지금 백업', link: true }] }] } }] },
+        ] } },
+        { title: '가족', value: '설정', icon: 'family', color: '#8E8E93', page: { sections: [{ custom: 'center', lines: ['가족 공유', '구독, 구입 항목, 위치 등을 가족과 함께 공유할 수 있습니다.'] }, { rows: [{ title: '시작하기', link: true }] }] } },
+        { title: '나의 찾기', icon: 'target', color: '#34C759', page: { sections: [
+          { rows: [{ title: '나의 iPad 찾기', value: '켬', page: { sections: [{ rows: [{ title: '나의 iPad 찾기', toggle: true }, { title: '나의 찾기 네트워크', toggle: true }, { title: '마지막 위치 보내기', toggle: false }] }] } }] },
+          { rows: [{ title: '내 위치 공유', toggle: true }] },
+        ] } },
+        { title: '미디어 및 구입 항목', icon: 'bag', color: '#007AFF', page: { sections: [{ rows: [{ title: '계정 보기' }, { title: '가족 공유' }, { title: '로그아웃', link: true }] }] } },
+      ] },
+      { rows: [{ title: DEVICE.name, sub: '이 iPad', icon: 'ipad', color: '#8E8E93', page: { sections: [
+        { rows: [{ title: '모델', value: DEVICE.model, chevron: false }, { title: '버전', value: `iPadOS ${DEVICE.os}`, chevron: false }] },
+        { rows: [{ title: 'iCloud 백업', value: '켬' }, { title: '나의 iPad 찾기', value: '켬' }] },
+      ] } }] },
+      { rows: [{ title: '로그아웃', danger: true }] },
+    ],
+  },
+
+  'Wi-Fi': {
+    button: '편집',
+    desc: 'Wi-Fi에 연결하고, 사용 가능한 네트워크를 확인하고, 네트워크 연결에 대한 설정을 관리할 수 있습니다.\n[더 알아보기...]',
+    rows: [{ title: 'Wi-Fi', toggle: false, key: 'wifi', indent: true }],
+    footer: [{ text: 'Wi-Fi를 켜면 위치 정확도가 향상됩니다.', showIf: '!@wifi' }],
+    sections: [
+      { header: '다른 네트워크', spinner: true, custom: 'networks', showIf: '@wifi' },
+      { showIf: '@wifi', rows: [{ title: '네트워크 연결 요청', value: '끔', page: { sections: [{ rows: pick(['끔', '알림', '묻기'], '끔'),
+        footer: '알고 있는 네트워크에 자동으로 연결됩니다. 사용 가능한 알고 있는 네트워크가 없다면, 네트워크에 수동으로 연결해야 합니다.' }] } }],
+        footer: '알고 있는 네트워크에 자동으로 연결됩니다. 사용 가능한 알고 있는 네트워크가 없다면, 네트워크에 수동으로 연결해야 합니다.' },
+    ],
+  },
+
+  'Bluetooth': {
+    desc: '음악 스트리밍, 전화 통화 및 게임과 같은 활동에 사용할 수 있는 액세서리에 연결하십시오.[더 알아보기...]',
+    rows: [{ title: 'Bluetooth', toggle: true, key: 'bt' }],
+    footer: [
+      { text: `이 iPad는 Bluetooth 설정이 열려 있는 동안 ‘${DEVICE.name}’(으)로 인식 가능합니다.`, showIf: '@bt' },
+      { text: 'AirDrop, AirPlay, 나의 찾기 및 위치 서비스는 Bluetooth를 사용합니다.', showIf: '!@bt' },
+    ],
+    sections: [
+      { header: '나의 기기', showIf: '@bt', rows: [device('AirPods Pro'), device('Apple Pencil'), device('Pebble K380s')] },
+      { header: '다른 기기', spinner: true, showIf: '@bt' },
+    ],
+  },
+
+  '배터리': {
+    desc: 'iPad의 배터리 사용 방식과 충전 설정을 관리합니다.',
+    rows: [{ title: '저전력 모드', toggle: false, key: 'lowPower' }],
+    footer: '저전력 모드를 켜면 iPad가 일부 백그라운드 작업, 처리 속도 및 디스플레이 밝기를 일시적으로 줄이고 iCloud 동기화, 메일 가져오기 등의 특정 기능을 제한합니다.',
+    sections: [
+      { rows: [{ title: '배터리 잔량 표시(%)', toggle: true, key: 'batteryPct' }], footer: '상태 막대의 배터리 아이콘 안에 잔량을 표시합니다.' },
+      { header: '충전', rows: [
+        { title: '충전 최적화', toggle: true, key: 'optCharge' },
+        { title: '충전 한도', value: '100%', page: { sections: [{ rows: pick(['80%', '85%', '90%', '95%', '100%'], '100%', 'chargeLimit'), footer: '배터리 수명을 늘리기 위해 선택한 한도까지만 충전합니다.' }] } },
+      ], footer: '배터리 노화를 줄이기 위해 iPad가 충전 습관을 학습해 필요할 때까지 완전 충전을 미룹니다.' },
+      { rows: [{ title: '배터리 성능 상태', value: '정상', page: { sections: [
+        { custom: 'center', lines: ['정상', '배터리가 정상적으로 작동하고 있습니다.'] },
+        { rows: [{ title: '최대 용량', value: BATTERY.health, chevron: false }], footer: '새 기기일 때와 비교한 배터리 용량입니다. 용량이 줄어들면 충전 사이의 사용 시간이 짧아질 수 있습니다.' },
+      ] } }] },
+    ],
+  },
+
+  '일반': {
+    desc: '소프트웨어 업데이트, 기기 언어, AirDrop 등 iPad에서 사용할 전반적인 설정 및 선호 사항을 관리합니다.',
+    sections: [
+      { rows: [
+        { title: '정보', icon: 'ipad', color: '#8E8E93', page: { sections: [
+          { rows: [
+            { title: '이름', value: DEVICE.name, page: { sections: [{ custom: 'field', value: DEVICE.name }] } },
+            { title: 'iPadOS 버전', value: DEVICE.os, page: center(`iPadOS ${DEVICE.os}`, '설치된 소프트웨어 버전입니다.') },
+            { title: '모델명', value: DEVICE.model, chevron: false },
+            { title: '모델 번호', value: DEVICE.modelNumber, chevron: false },
+            ...(DEVICE.serial ? [{ title: '일련 번호', value: DEVICE.serial, chevron: false }] : []),
+          ] },
+          { rows: [{ title: DEVICE.warranty, page: center(DEVICE.warranty, '이 iPad의 제한 보증 기간이 끝났습니다.') }] },
+          { rows: [
+            { title: '노래', value: DEVICE.songs, chevron: false },
+            { title: '비디오', value: DEVICE.videos, chevron: false },
+            { title: '사진', value: DEVICE.photos, chevron: false },
+            { title: '응용 프로그램', value: DEVICE.apps, chevron: false },
+            { title: '전체 공간', value: DEVICE.capacity, chevron: false },
+            { title: '사용 가능 공간', value: DEVICE.free, chevron: false },
+          ] },
+          { rows: [
+            { title: 'Wi-Fi 주소', value: DEVICE.wifiAddress, chevron: false },
+            { title: 'Bluetooth', value: DEVICE.btAddress, chevron: false },
+            { title: 'SEID', page: center('SEID', '보안 요소 식별자입니다.') },
+          ] },
+          { rows: [{ title: '인증서 신뢰 설정', page: center('인증서 신뢰 설정', '직접 설치한 인증서가 없습니다.') }] },
+        ] } },
+        { title: '소프트웨어 업데이트', icon: 'gear', color: '#8E8E93', page: { sections: [
+          { rows: [
+            { title: '자동 업데이트', value: '켬', page: { sections: [{ rows: [{ title: 'iPadOS 업데이트 다운로드', toggle: true }, { title: 'iPadOS 업데이트 설치', toggle: true }, { title: '보안 대응 및 시스템 파일', toggle: true }], footer: 'iPad가 충전 중이고 Wi-Fi에 연결되어 있을 때 밤사이 업데이트가 설치됩니다.' }] } },
+            { title: '베타 업데이트', value: '끔', page: { sections: [{ rows: pick(['끔', 'iPadOS 27 Public Beta'], '끔') }] } },
+          ] },
+          { custom: 'center', lines: [`iPadOS ${DEVICE.os}`, 'iPadOS가 최신 상태입니다'] },
+        ] } },
+        { title: 'iPad 저장 공간', icon: 'drive', color: '#8E8E93', page: { sections: [
+          { custom: 'storage' },
+          { header: '권장 사항', rows: [{ title: '사용하지 않는 앱 정리', link: true, sub: '공간이 부족하면 사용하지 않는 앱이 자동으로 정리됩니다.' }] },
+          { rows: STORAGE.apps.map((a) => ({ title: a.name, value: a.size, ...appTile(a.name), page: { sections: [
+            { rows: [{ title: '앱', value: `${(APPS.find((x) => x.name === a.name) || {}).count || 0}개`, chevron: false }, { title: '사용 중인 공간', value: a.size, chevron: false }] },
+            { rows: [{ title: '사용하지 않는 앱 정리', link: true }], footer: '이 카테고리에서 오래 쓰지 않은 앱의 저장 공간을 비우고 문서와 데이터는 유지합니다.' },
+          ] } })) },
+        ] } },
+      ] },
+      { rows: [
+        { title: 'AirDrop', icon: 'airdrop', color: '#FFFFFF', fg: '#007AFF', page: { sections: [
+          { rows: pick(['수신 끔', '연락처만', '모든 사람에게 10분 동안'], '연락처만'),
+            footer: 'AirDrop을 사용하면 근처에 있는 사람과 사진, 문서 등을 바로 주고받을 수 있습니다.' },
+          { header: '근처에서 공유', rows: [{ title: '기기를 가까이 대기', toggle: true }] },
+        ] } },
+        { title: 'AirPlay 및 연속성', icon: 'airplay', color: '#007AFF', page: { sections: [
+          { rows: [{ title: '자동으로 AirPlay', value: '안 함', page: { sections: [{ rows: pick(['안 함', '묻기', '자동'], '안 함') }] } }] },
+          { rows: [{ title: 'Handoff', toggle: true }, { title: '커서 및 키보드', toggle: true }],
+            footer: '같은 계정으로 로그인한 근처 기기에서 하던 작업을 이어서 할 수 있습니다.' },
+        ] } },
+        { title: '화면 캡처', icon: 'capture', color: '#8E8E93', page: { sections: [{ rows: [{ title: '전체 화면 미리보기', toggle: true }] }] } },
+      ] },
+      { rows: [
+        { title: '날짜 및 시간', icon: 'calendar', color: '#007AFF', page: { sections: [
+          { rows: [{ title: '24시간제', toggle: false, key: 'h24' }], footer: '켜면 배경화면 미리보기 시계가 24시간제로 표시됩니다.' },
+          { rows: [{ title: '자동으로 설정', toggle: true }, { title: '시간대', value: '서울', chevron: false }] },
+        ] } },
+        { title: '백그라운드 앱 새로 고침', icon: 'refresh', color: '#8E8E93', page: { sections: [
+          { rows: [{ title: '백그라운드 앱 새로 고침', value: 'Wi-Fi', page: { sections: [{ rows: pick(['끔', 'Wi-Fi'], 'Wi-Fi') }] } }],
+            footer: '앱이 Wi-Fi에 연결되어 있을 때 백그라운드에서 콘텐츠를 새로 고치도록 허용합니다. 앱을 끄면 배터리 사용 시간을 늘리는 데 도움이 될 수 있습니다.' },
+          { rows: APPS.map((a) => ({ title: a.name, toggle: true, key: def(`bg:${a.name}`, true), ...appTile(a.name) })) },
+        ] } },
+        { title: '사전', icon: 'book', color: '#007AFF', page: { sections: [{ rows: multi(['한국어', '영어(미국)', '영어(영국)', '일본어', '중국어 간체'], ['한국어', '영어(미국)']) }] } },
+        { title: '서체', text: 'Aa', color: '#8E8E93', page: center('설치된 서체 없음', 'App Store에서 서체 앱을 다운로드하면 여기에서 서체를 관리할 수 있습니다.') },
+        { title: '언어 및 지역', icon: 'globe', color: '#007AFF', page: { sections: [
+          { header: '선호하는 언어', rows: [{ title: '한국어', sub: 'iPad 언어', chevron: false }, { title: 'English', sub: '영어', chevron: false }, { title: '언어 추가...', link: true }],
+            footer: '앱 및 웹 사이트는 이 목록에서 지원되는 첫 번째 언어를 사용합니다.' },
+          { rows: [{ title: '지역', value: '대한민국' }, { title: '달력', value: '양력' }, { title: '온도', value: '섭씨(°C)', page: { sections: [{ rows: pick(['섭씨(°C)', '화씨(°F)'], '섭씨(°C)') }] } }, { title: '측정 단위', value: '미터법', page: { sections: [{ rows: pick(['미터법', '미국식', '영국식'], '미터법') }] } }, { title: '주의 시작 요일', value: '일요일', page: { sections: [{ rows: pick(['일요일', '월요일', '토요일'], '일요일') }] } }, { title: '날짜 형식', value: DATE_STR, chevron: false }, { title: '숫자 형식', value: '1,234,567.89', chevron: false }] },
+          { rows: [{ title: '라이브 텍스트', toggle: true }], footer: '이미지 속 텍스트를 선택해 복사하거나 다른 작업을 할 수 있습니다.' },
+        ] } },
+        { title: '자동 완성 및 암호', icon: 'key', color: '#8E8E93', page: { sections: [
+          { rows: [{ title: '암호 및 패스키 자동 완성', toggle: true }] },
+          { rows: [{ title: '사용 후 인증 코드 삭제', toggle: false }] },
+        ] } },
+        { title: '키보드', icon: 'keyboard', color: '#8E8E93', page: { sections: [
+          { rows: [
+            { title: '키보드', value: '3', page: { sections: [{ rows: [{ title: '한국어', sub: '두벌식' }, { title: 'English (US)' }, { title: '이모티콘' }, { title: '새로운 키보드 추가...', link: true }] }] } },
+            { title: '텍스트 대치', page: { button: '+', sections: [{ rows: [{ title: 'On my way!', value: 'omw' }], footer: '자주 쓰는 문장을 짧은 단축키로 입력할 수 있습니다.' }] } },
+          ] },
+          { header: '모든 키보드', rows: [{ title: '자동 대문자', toggle: true }, { title: '자동 수정', toggle: true }, { title: '맞춤법 검사', toggle: true }, { title: 'Caps Lock 활성화', toggle: true }, { title: '예측', toggle: true }, { title: '스마트 구두점', toggle: true }, { title: '‘.’ 단축키', toggle: true }],
+            footer: '스페이스 바를 두 번 탭하면 마침표와 공백이 입력됩니다.' },
+          { header: '받아쓰기', rows: [{ title: '받아쓰기 활성화', toggle: true }, { title: '자동 구두점', toggle: true }] },
+        ] } },
+      ] },
+      { rows: [{ title: 'TV 제공업체', icon: 'tv', color: '#1C1C1E', page: center('TV 제공업체', 'TV 제공업체로 로그인하면 지원되는 앱에서 동영상을 볼 수 있습니다.') }] },
+      { rows: [{ title: 'VPN 및 기기 관리', icon: 'gear', color: '#8E8E93', page: { sections: [{ rows: [{ title: 'VPN', value: '연결 안 됨', page: { sections: [{ rows: [{ title: 'VPN 구성 추가...', link: true }] }] } }] }] } }] },
+      { rows: [{ title: '법률 및 규제', icon: 'doc', color: '#8E8E93', page: { sections: [
+        { rows: [{ title: '법적 고지 사항', page: center('법적 고지 사항', '이 iPad에 포함된 소프트웨어의 법적 고지 사항입니다.') }, { title: '라이선스', page: center('라이선스', '소프트웨어 사용권 계약 내용입니다.') }, { title: '보증', page: center('보증', '제한 보증 내용입니다.') }, { title: 'RF 노출', page: center('RF 노출', '무선 주파수 노출 관련 정보입니다.') }] },
+        { rows: [{ title: '규제', page: center('규제', '이 기기의 인증 및 규제 정보입니다.') }] },
+      ] } }] },
+      { rows: [
+        { title: 'iPad 전송 또는 재설정', icon: 'transfer', color: '#8E8E93', page: { sections: [
+          { custom: 'prepare' },
+          { rows: [
+            { title: '재설정', link: true, page: { sections: [{ rows: [{ title: '모든 설정 재설정', link: true, action: 'reset' }], footer: '이 앱에서 바꾼 스위치와 선택이 모두 처음 상태로 돌아갑니다.' }] } },
+            { title: '모든 콘텐츠 및 설정 지우기', link: true },
+          ] },
+        ] } },
+        { title: '시스템 종료', link: true },
+      ] },
+    ],
+  },
+
+  '손쉬운 사용': {
+    desc: '시각, 동작, 청각, 말하기 및 인지를 지원하는 ‘손쉬운 사용’ 기능과 함께 iPad를 사용자에게 꼭 맞는 방식으로 최적화할 수 있습니다. [더 알아보기...]',
+    sections: [
+      { header: '시각 지원', rows: [
+        { title: 'VoiceOver', value: '끔', valueFrom: '@voiceover', icon: 'voiceover', color: '#1C1C1E', page: { sections: [
+          { rows: [{ title: 'VoiceOver', toggle: false, key: 'voiceover' }], footer: '켜면 누르는 항목의 이름을 소리 내어 읽어 줍니다.' },
+          { header: '말하기 속도', rows: [{ title: '말하기 속도', slider: 0.5, key: 'speechRate', ends: ['느리게', '빠르게'] }] },
+          { rows: [{ title: '음성' }, { title: '자세한 정도' }, { title: '점자' }] },
+        ] } },
+        { title: '확대/축소', value: '끔', icon: 'zoom', color: '#1C1C1E', page: { sections: [
+          { rows: [{ title: '확대/축소', toggle: false }], footer: '세 손가락으로 이중 탭하면 화면 전체를 확대할 수 있습니다.' },
+          { rows: [{ title: '초점 따라가기', toggle: true }, { title: '스마트 타이핑', toggle: false }, { title: '키보드 단축키' }, { title: '확대/축소 컨트롤러', value: '끔' }] },
+          { header: '최대 확대/축소 수준', rows: [{ title: '확대/축소 수준', slider: 0.3, ends: ['1.2x', '15x'] }] },
+        ] } },
+        { title: '텍스트 표시', value: '끔', icon: 'text', text: 'a', color: '#007AFF', page: onoff('텍스트 표시', false, '포인터나 손가락을 올려 둔 텍스트를 크게 보여 줍니다.') },
+        { title: '디스플레이 및 텍스트 크기', text: 'AA', color: '#007AFF', page: { sections: [
+          { rows: [
+            { title: '볼드체 텍스트', toggle: false, key: 'bold' },
+            { title: '더 큰 텍스트', value: '끔', page: { sections: [{ rows: [{ title: '더 큰 손쉬운 사용 크기', toggle: false }] }, { rows: [{ title: '텍스트 크기', slider: 0.5, key: 'textSize', ends: ['A', 'A'] }], footer: '이 앱의 글자 크기가 바뀝니다.' }] } },
+            { title: '버튼 모양', toggle: false, key: 'btnShape' },
+            { title: '켬/끔 레이블', toggle: false, key: 'onoffLabel' },
+            { title: '투명도 줄이기', toggle: false, key: 'noTransp' },
+            { title: '대비 증가', toggle: false, key: 'contrast' },
+            { title: '색상 없이 구별', toggle: false },
+            { title: '스마트 반전', toggle: false, key: 'smartInvert' },
+            { title: '클래식 반전', toggle: false, key: 'classicInvert' },
+            { title: '색상 필터', value: '끔', valueFrom: '@grayscale', page: onoff('색상 필터', false, '켜면 화면이 흑백으로 바뀝니다.', 'grayscale') },
+            { title: '화이트 포인트 줄이기', toggle: false, key: 'whitePoint' },
+          ] },
+          { rows: [{ title: '자동 밝기', toggle: true }], footer: '자동 밝기를 끄면 배터리 사용 시간에 영향을 줄 수 있습니다.' },
+        ] } },
+        { title: '동작', icon: 'motion', color: '#34C759', page: { sections: [{ rows: [{ title: '동작 줄이기', toggle: false, key: 'reduceMotion' }, { title: '메시지 효과 자동 재생', toggle: true }, { title: '비디오 미리보기 자동 재생', toggle: true }, { title: '애니메이션 이미지', toggle: true }], footer: '동작 줄이기를 켜면 화면 전환 움직임이 사라집니다.' }] } },
+        { title: '읽기 및 말하기', icon: 'speech', color: '#1C1C1E', page: { sections: [
+          { rows: [{ title: '선택 항목 말하기', toggle: false, key: 'speakSel' }, { title: '화면 말하기', toggle: false }, { title: '말하기 컨트롤러', value: '끔' }], footer: '선택 항목 말하기를 켜면 누르는 항목을 소리 내어 읽어 줍니다.' },
+          { rows: [{ title: '입력 피드백' }, { title: '음성' }, { title: '발음' }] },
+          { header: '말하기 속도', rows: [{ title: '말하기 속도', slider: 0.5, key: 'speechRate', ends: ['느리게', '빠르게'] }] },
+        ] } },
+        { title: '실시간 인지', icon: 'brackets', color: '#1C1C1E', page: onoff('실시간 인지', false, '카메라로 주변의 문, 사람, 텍스트 등을 인식해 알려 줍니다.') },
+        { title: '오디오 설명', value: '끔', icon: 'speech', color: '#007AFF', page: onoff('오디오 설명', false, '지원되는 동영상에서 장면 설명을 자동으로 재생합니다.') },
+      ] },
+      { header: '신체 및 동작 지원', rows: [
+        { title: '터치', icon: 'touch', color: '#007AFF', page: { sections: [
+          { rows: [{ title: 'AssistiveTouch', value: '끔', page: onoff('AssistiveTouch', false, '화면에 떠 있는 버튼으로 홈, 제어 센터 등 여러 기능을 실행할 수 있습니다.') }, { title: '터치 조절', value: '끔' }, { title: '햅틱 터치', value: '기본', page: { sections: [{ rows: pick(['빠르게', '기본', '느리게'], '기본'), footer: '길게 눌러 미리보기, 동작 등을 볼 때까지 걸리는 시간을 조절합니다.' }] } }] },
+          { rows: [{ title: '흔들어서 실행 취소', toggle: true }] },
+        ] } },
+        { title: '스위치 제어', value: '끔', icon: 'switchgrid', color: '#1C1C1E', page: onoff('스위치 제어', false, '항목을 차례로 강조하고 연결된 스위치로 선택할 수 있습니다.') },
+        { title: '음성 명령', value: '끔', icon: 'wave', color: '#007AFF', page: onoff('음성 명령', false, '목소리만으로 iPad를 조작할 수 있습니다.') },
+        { title: '눈 추적', value: '끔', icon: 'eye', color: '#BF5AF2', page: onoff('눈 추적', false, '전면 카메라로 시선을 추적해 화면을 조작합니다.') },
+        { title: '머리 추적', value: '끔', icon: 'headtrack', color: '#34C759', page: onoff('머리 추적', false, '머리 움직임으로 포인터를 움직입니다.') },
+        { title: '상단 버튼/Touch ID', icon: 'topbutton', color: '#007AFF', page: { sections: [
+          { header: '클릭 속도', rows: pick(['기본', '느리게', '가장 느리게'], '기본') },
+          { rows: [{ title: '손가락을 올려 잠금 해제', toggle: false }], footer: '버튼을 누르지 않고 손가락을 올려놓기만 해도 잠금이 해제됩니다.' },
+        ] } },
+      ] },
+      { header: '청각 지원', rows: [
+        { title: '보청 기기', icon: 'ear', color: '#007AFF', page: { sections: [{ header: '기기', spinner: true }, { rows: [{ title: '청각 보조 장치 호환성', toggle: false }] }] } },
+        { title: '사운드 인식', value: '끔', icon: 'soundrec', color: '#FF3B30', page: onoff('사운드 인식', false, '초인종, 경보음 같은 소리를 인식하면 알림으로 알려 줍니다.') },
+        { title: '오디오 및 시각 요소', icon: 'av', color: '#007AFF', page: { sections: [
+          { rows: [{ title: '모노 오디오', toggle: false, key: 'mono' }, { title: '배경 사운드', value: '끔' }], footer: '모노 오디오를 켜면 알림음이 양쪽에서 똑같이 들립니다.' },
+          { header: '밸런스', rows: [{ title: '밸런스', slider: 0.5, key: 'balance', ends: ['L', 'R'] }], footer: '알림음 미리듣기 소리의 왼쪽/오른쪽 비율이 바뀝니다.' },
+        ] } },
+        { title: '자막 및 캡션', text: 'CC', color: '#007AFF', page: { sections: [{ rows: [{ title: '청각 장애인용 자막 + SDH', toggle: false }, { title: '스타일', value: '기본값' }] }] } },
+      ] },
+      { header: '일반', rows: [
+        { title: '사용법 유도', value: '끔', icon: 'lock', color: '#8E8E93', page: onoff('사용법 유도', false, 'iPad를 한 앱에만 머물게 하고 사용할 수 있는 기능을 제한합니다.') },
+        { title: '손쉬운 사용 단축키', value: '끔', icon: 'access', color: '#007AFF', page: { sections: [{ header: '상단 버튼을 세 번 클릭', rows: multi(['AssistiveTouch', 'VoiceOver', '클래식 반전', '스마트 반전', '확대/축소', '화이트 포인트 줄이기']) }] } },
+        { title: '앱별 설정', icon: 'apps', color: '#007AFF', page: { sections: [{ rows: [{ title: '앱 추가', link: true }], footer: '앱마다 디스플레이 및 텍스트 크기 설정을 다르게 지정할 수 있습니다.' }] } },
+      ] },
+    ],
+  },
+
+  '검색': {
+    hero: false,
+    sections: [
+      { header: '검색 및 찾아보기', rows: [{ title: '관련 콘텐츠 보기', toggle: true }],
+        footer: '사진에서 텍스트 또는 대상을 찾거나 검색할 때 Apple 및 관계사의 콘텐츠를 표시하도록 허용합니다. 이 설정을 활성화하면, 검색할 때 정보를 더 빠르게 찾을 수 있도록 사용자의 기기에 있는 콘텐츠를 Apple이 서버에서 관리하는 글로벌 인덱스와 비공개로 대조합니다. [검색 및 개인정보 보호에 관하여...]' },
+      { header: '검색 전에', rows: [
+        { title: '앱 제안', popup: '앱 5개' },
+        { title: '앱 단축어 제안', toggle: false },
+        { title: '최근 검색 보기', toggle: false },
+      ] },
+      { rows: [{ title: '검색 엔진', value: 'Google', page: { sections: [{ rows: pick(['Google', 'Yahoo', 'Bing', 'DuckDuckGo', 'Ecosia'], 'Google') }] } }] },
+      { rows: [{ title: 'Apple의 검색 기능 향상에 기여하기', toggle: true }],
+        footer: 'Apple이 Safari, Siri 및 Spotlight에서 사용자가 입력한 검색어를 저장하도록 허용하여 검색 기능 향상에 도움을 줄 수 있습니다. 이때 입력한 검색어는 사용자와 연결되지 않는 방식으로 저장됩니다.\n\n검색어에는 일반적인 지식을 검색한 내용이나 음악 재생, 경로 찾기와 같은 요청이 포함됩니다. [검색 및 개인정보 보호에 관하여...]' },
+      { header: '앱', rows: APPS.map((a) => ({ title: a.name, ...appTile(a.name), page: { sections: [{ rows: [{ title: '검색에 앱 표시', toggle: true }, { title: '검색에 콘텐츠 표시', toggle: true }] }, { rows: [{ title: '앱 제안', toggle: true }] }] } })) },
+    ],
+  },
+
+  '디스플레이 및 밝기': {
+    hero: false,
+    sections: [
+      { header: '밝기', rows: [{ title: '밝기', slider: 0.5, key: 'brightness' }, { title: 'True Tone', toggle: false, key: 'trueTone' }],
+        footer: '밝기 막대를 움직이면 이 앱 화면의 밝기가 바뀝니다. True Tone을 켜면 화면이 살짝 따뜻한 색으로 바뀝니다.' },
+      { rows: [{ title: 'Night Shift', value: '끔', valueFrom: '@nightShift', page: { sections: [
+        { rows: [{ title: '시간 지정', toggle: false }], footer: 'Night Shift는 디스플레이 색상을 따뜻한 쪽으로 바꿔 밤에 화면을 보기 편하게 해 줍니다.' },
+        { rows: [{ title: '수동으로 내일까지 켜기', toggle: false, key: 'nightShift' }] },
+        { header: '색 온도', rows: [{ title: '색 온도', slider: 0.5, key: 'nightTemp', ends: ['덜 따뜻하게', '더 따뜻하게'] }] },
+      ] } }] },
+      { rows: [{ title: '자동 잠금', value: '5분', page: { sections: [{ rows: pick(['2분', '5분', '10분', '15분', '안 함'], '5분') }] } }, { title: '잠금 / 잠금 해제', toggle: true }],
+        footer: 'iPad 커버를 닫거나 열 때 자동으로 iPad를 잠그거나 잠금 해제합니다.' },
+      { header: '디스플레이', rows: [{ title: '디스플레이 확대', value: '기본', page: { sections: [{ rows: pick(['더 큰 텍스트', '기본', '더 많은 공간'], '기본', 'displayZoom'), footer: '이 앱 화면에 보이는 항목의 크기가 바뀝니다.' }] } }] },
+      { rows: [{ title: '손쉬운 사용 설정에서 더 보기...', link: true }] },
+    ],
+  },
+
+  '멀티태스킹 및 제스처': {
+    desc: '여러 앱을 동시에 사용하는 방식과 화면 제스처를 설정합니다.',
+    sections: [
+      { header: '멀티태스킹', rows: pick(['전체 화면 앱', '윈도우 앱', 'Stage Manager'], '전체 화면 앱') },
+      { header: '제스처', rows: [{ title: '네 손가락 및 다섯 손가락 제스처', toggle: true }, { title: '모서리에서 쓸어넘기기', toggle: true }],
+        footer: '네 손가락 또는 다섯 손가락으로 쓸어 앱을 전환하거나 홈 화면으로 이동할 수 있습니다.' },
+      { rows: [{ title: 'PIP 자동 시작', toggle: true }] },
+    ],
+  },
+
+  '배경화면': {
+    desc: '잠금 화면과 홈 화면의 배경화면을 바꾸고 사용자화합니다.',
+    sections: [
+      { custom: 'wallpaper' },
+      { rows: [{ title: '새로운 배경화면 추가', link: true }] },
+    ],
+  },
+
+  '제어 센터': {
+    desc: '화면 오른쪽 위에서 아래로 쓸어내려 자주 쓰는 기능을 바로 켜고 끕니다.',
+    sections: [
+      { rows: [{ title: '앱 내에서 접근', toggle: true }], footer: '앱을 사용하는 동안에도 제어 센터를 열 수 있습니다.' },
+      { rows: [{ title: '홈 컨트롤 표시', toggle: true }] },
+    ],
+  },
+
+  '카메라': {
+    desc: '사진과 비디오의 형식, 화질 및 촬영 옵션을 설정합니다.',
+    sections: [
+      { rows: [
+        { title: '형식', page: { sections: [{ header: '카메라 캡처', rows: pick(['고효율성', '높은 호환성'], '고효율성'), footer: '고효율성 형식을 사용하면 파일 크기를 줄일 수 있습니다.' }] } },
+        { title: '비디오 녹화', value: '1080p, 30fps', page: { sections: [{ rows: pick(['720p HD, 30fps', '1080p, 30fps', '1080p, 60fps', '4K, 30fps'], '1080p, 30fps'), footer: '1분 분량의 비디오 크기는 대략 다음과 같습니다.\n· 720p HD, 30fps: 45MB\n· 1080p, 30fps: 65MB\n· 4K, 30fps: 190MB' }] } },
+        { title: '설정 보존', page: { sections: [{ rows: [{ title: '카메라 모드', toggle: false }, { title: '크리에이티브 컨트롤', toggle: false }, { title: 'Live Photo', toggle: true }] }] } },
+      ] },
+      { header: '구성', rows: [{ title: '격자', toggle: false }, { title: '셀프 카메라 미러링', toggle: true }, { title: 'QR 코드 스캔', toggle: true }, { title: '감지된 텍스트 표시', toggle: true }] },
+    ],
+  },
+
+  '홈 화면 및 앱 보관함': {
+    desc: '새로 다운로드한 앱이 놓일 위치와 홈 화면 표시 방식을 정합니다.',
+    sections: [
+      { header: '새로 다운로드한 앱', rows: pick(['홈 화면에 추가', '앱 보관함에만'], '홈 화면에 추가') },
+      { header: '알림 배지', rows: [{ title: '앱 보관함에 표시', toggle: false }] },
+      { header: 'Dock', rows: [{ title: '제안 및 최근 사용한 앱을 Dock에 표시', toggle: true }] },
+      { header: '검색', rows: [{ title: '홈 화면에 표시', toggle: true }] },
+    ],
+  },
+
+  '화면 모드': {
+    desc: '라이트 모드와 다크 모드를 선택하고 화면 표시 방식을 조절합니다.',
+    sections: [
+      { custom: 'appearance' },
+      { rows: [{ title: '자동', toggle: SETTINGS.theme === 'auto', key: 'appearanceAuto' }], footer: '켜면 아이패드의 화면 모드를 그대로 따라갑니다.' },
+      { rows: [{ title: '텍스트 크기', page: { sections: [{ rows: [{ title: '텍스트 크기', slider: 0.5, key: 'textSize', ends: ['A', 'A'] }], footer: '이 앱의 글자 크기가 바뀝니다.' }] } }, { title: '볼드체 텍스트', toggle: false, key: 'bold' }] },
+    ],
+  },
+
+  'Apple Pencil': {
+    desc: 'Apple Pencil의 손글씨 입력과 더블 탭 동작을 설정합니다.',
+    sections: [
+      { rows: [{ title: '손글씨', toggle: true }, { title: 'Apple Pencil로만 그리기', toggle: false }],
+        footer: '텍스트 필드에 Apple Pencil로 쓰면 글자가 텍스트로 바뀝니다.' },
+      { header: '더블 탭', rows: pick(['현재 도구와 지우개 간 전환', '현재 도구와 마지막 사용 도구 간 전환', '색상 팔레트 보기', '끔'], '현재 도구와 지우개 간 전환') },
+      { header: 'Apple Pencil 제스처', rows: [{ title: '왼쪽 모서리 쓸어넘기기', value: '스크린샷', page: { sections: [{ rows: pick(['끔', '스크린샷', '빠른 메모'], '스크린샷') }] } }, { title: '오른쪽 모서리 쓸어넘기기', value: '빠른 메모', page: { sections: [{ rows: pick(['끔', '스크린샷', '빠른 메모'], '빠른 메모') }] } }] },
+    ],
+  },
+
+  '알림': {
+    desc: '알림이 표시되는 방식과 미리보기, 앱별 알림을 관리합니다.',
+    sections: [
+      { rows: [
+        { title: '표시 형태', value: '스택', page: { sections: [{ rows: pick(['개수', '스택', '목록'], '스택'), footer: '잠금 화면에 알림을 표시하는 방식을 선택합니다.' }] } },
+        { title: '예약 요약', value: '끔', page: onoff('예약 요약', false, '중요하지 않은 알림을 모아 정해진 시간에 한꺼번에 받아 봅니다.') },
+        { title: '미리보기 표시', value: '잠금 해제 시', page: { sections: [{ rows: pick(['항상', '잠금 해제 시', '안 함'], '잠금 해제 시') }] } },
+        { title: '화면 공유', value: '알림 꺼짐', valueFrom: '@shareNotif', valueOn: '알림 켜짐', valueOff: '알림 꺼짐', page: onoff('알림 허용', false, '화면을 공유하거나 미러링하는 동안 알림을 표시할지 정합니다.', 'shareNotif') },
+      ] },
+      { header: '알림 스타일', rows: APPS.map((a) => ({ title: a.name, sub: a.notify, ...appTile(a.name), page: notifPage(a) })) },
+    ],
+  },
+
+  '사운드': {
+    desc: '음량과 알림음, 키보드 클릭 등 iPad의 소리를 설정합니다.',
+    sections: [
+      { header: '벨소리 및 알림 음량', rows: [{ title: '음량', slider: 0.6, key: 'volume', endIcons: 'volume' }, { title: '버튼으로 변경', toggle: true }],
+        footer: '알림음을 고르면 미리 들을 수 있고, 음량 막대로 그 소리 크기를 조절할 수 있습니다.' },
+      { header: '사운드', rows: [tone('문자 수신음', '노트'), tone('새로운 메일', '없음'), tone('보낸 메일', '휙'), tone('캘린더 알림', '차임'), tone('미리 알림', '차임')] },
+      { rows: [{ title: '키보드 클릭', toggle: true, key: 'kbClick' }, { title: '잠금 사운드', toggle: true }], footer: '키보드 클릭을 켜면 검색창에 입력할 때 소리가 납니다.' },
+    ],
+  },
+
+  '집중 모드': {
+    desc: '집중해야 할 때 알림을 줄이고 허용할 사람과 앱을 정합니다.',
+    button: '+',
+    sections: [
+      { rows: [
+        { title: '방해금지 모드', icon: 'moon', color: '#5E5CE6', page: focusPage('방해금지 모드', false) },
+        { title: '개인 시간', icon: 'user', color: '#AF52DE', page: focusPage('개인 시간', true) },
+        { title: '수면', icon: 'bed', color: '#30B0C7', page: focusPage('수면', true) },
+        { title: '업무 시간', icon: 'briefcase', color: '#34C759', page: focusPage('업무 시간', true) },
+      ] },
+      { rows: [{ title: '기기 간 공유', toggle: true }], footer: '같은 계정으로 로그인한 모든 기기에 집중 모드가 함께 적용됩니다.' },
+      { rows: [{ title: '집중 모드 상태', value: '켬', page: onoff('집중 모드 상태 공유', true, '집중 모드를 사용 중일 때 앱이 다른 사람에게 알림이 꺼져 있다고 알려 줄 수 있습니다.') }] },
+    ],
+  },
+
+  '스크린 타임': {
+    desc: '스크린 타임 사용에 관한 심층 분석 리포트를 받고, 필요에 따라 제한을 설정할 수 있습니다. 성인 사용자는 자녀의 기기에 부모용 제어 기능을 설정할 수도 있습니다.\n[더 알아보기...]',
+    sections: [
+      // '앱 및 웹사이트 활동'을 켜면 나타나요. 이 앱을 실제로 열어 둔 시간이 기록돼요
+      { header: '앱 및 웹사이트 활동', custom: 'stActivity', showIf: '@stActivity' },
+      { rows: [
+        { title: '앱 및 웹사이트', sub: () => `${get('stAppRating', '19+')} 및 ${get('stWeb', '제한 없음') === '제한 없음' ? '전체 웹 접근' : get('stWeb')}`, icon: 'webcheck', color: '#007AFF', page: { sections: [
+          { header: '앱', rows: pick(['4+', '9+', '12+', '15+', '19+'], '19+', 'stAppRating'), footer: '선택한 연령 등급까지의 앱을 사용할 수 있습니다.' },
+          { header: '웹 콘텐츠', rows: pick(['제한 없음', '성인 웹사이트 제한', '허용된 웹사이트만'], '제한 없음', 'stWeb') },
+        ] } },
+        { title: '허용된 연락처', sub: () => get('stContacts', '모든 사람'), icon: 'contacts', color: '#34C759', page: { sections: [
+          { rows: pick(['모든 사람', '연락처만', '특정 연락처'], '모든 사람', 'stContacts'), footer: '전화, FaceTime, 메시지에서 연락할 수 있는 사람을 정합니다.' },
+        ] } },
+        { title: '항상 허용', sub: '설정되지 않음', icon: 'badge', color: '#34C759', page: { sections: [
+          { rows: [{ title: '앱 추가', link: true }], footer: '스크린 타임 시간 지정과 허용 시간 중에도 사용할 수 있는 앱을 선택합니다.' },
+        ] } },
+      ] },
+      { rows: [
+        { title: '스크린 타임 시간 지정', sub: () => (get('stActivity') && get('stSchedule') ? `${get('stFrom', '오후 10:00')} ~ ${get('stTo', '오전 7:00')}` : '기기 사용 가능 시간'), icon: 'window', color: '#5E5CE6', needs: 'stActivity', page: { sections: [
+          { showIf: '@stActivity', rows: [{ title: '시간 지정', toggle: false, key: 'stSchedule' }], footer: '지정한 시간 동안에는 항상 허용한 앱만 사용할 수 있습니다.' },
+          { showIf: '@stSchedule', rows: [
+            { title: '시작', value: '오후 10:00', page: { sections: [{ rows: pick(['오후 9:00', '오후 10:00', '오후 11:00', '오전 12:00'], '오후 10:00', 'stFrom') }] } },
+            { title: '종료', value: '오전 7:00', page: { sections: [{ rows: pick(['오전 6:00', '오전 7:00', '오전 8:00'], '오전 7:00', 'stTo') }] } },
+          ] },
+        ] } },
+        { title: '허용 시간', sub: '콘텐츠 카테고리 허용 시간', icon: 'hourglass', color: '#FF9500', needs: 'stActivity', page: { sections: [
+          { showIf: '@stActivity', rows: [{ title: '시간 제한 추가', link: true }], footer: '앱 카테고리별로 하루 사용 시간을 정할 수 있습니다. 허용 시간은 매일 자정에 초기화됩니다.' },
+        ] } },
+      ] },
+      { rows: [
+        { title: '콘텐츠 및 개인정보 보호 제한', sub: () => (get('stRestrict') ? '켬' : '콘텐츠, 기능 및 개인정보 관리'), icon: 'nosign', color: '#FF3B30', page: { sections: [
+          { rows: [{ title: '콘텐츠 및 개인정보 보호 제한', toggle: false, key: 'stRestrict' }] },
+          { showIf: '@stRestrict', rows: [{ title: 'App Store, 미디어, 웹 및 게임' }, { title: '허용된 앱 및 기능' }] },
+          { showIf: '@stRestrict', header: '개인정보 보호', rows: [
+            { title: '위치 서비스', value: '허용', page: { sections: [{ rows: pick(['허용', '허용 안 함'], '허용') }] } },
+            { title: '연락처', value: '허용', page: { sections: [{ rows: pick(['허용', '허용 안 함'], '허용') }] } },
+            { title: '사진', value: '허용', page: { sections: [{ rows: pick(['허용', '허용 안 함'], '허용') }] } },
+          ] },
+        ] } },
+        { title: '커뮤니케이션 안전', sub: () => (get('stComm') ? '켬' : '민감한 콘텐츠로부터 보호'), icon: 'bubbleAlert', color: '#007AFF', page: onoff('민감한 콘텐츠 확인', false, '민감한 사진이나 비디오를 받거나 보내기 전에 경고를 표시합니다.', 'stComm') },
+      ] },
+      { rows: [{ title: '암호 및 관리', icon: 'lock', color: '#007AFF', page: { sections: [
+        { rows: [{ title: '스크린 타임 암호 사용', link: true }], footer: '암호를 사용해 스크린 타임 설정을 보호합니다.' },
+        { rows: [{ title: '기기 간 공유', toggle: true }], footer: '같은 계정으로 로그인한 모든 기기의 스크린 타임을 함께 보여 줍니다.' },
+      ] } }] },
+      { showIf: '@stActivity', rows: [{ title: '앱 및 웹사이트 활동 끄기', danger: true, action: 'stOff' }] },
+    ],
+  },
+
+  'Touch ID 및 암호': {
+    desc: '지문으로 iPad를 잠금 해제하고 암호를 관리합니다.',
+    sections: [
+      { header: 'Touch ID 사용', rows: [
+        { title: 'iPad 잠금 해제', toggle: true },
+        { title: 'iTunes 및 App Store', toggle: true },
+        { title: '암호 자동 완성', toggle: true },
+      ] },
+      { header: '지문', rows: [
+        { title: '지문 1', page: { sections: [{ custom: 'field', value: '지문 1' }, { rows: [{ title: '지문 삭제', danger: true }] }] } },
+        { title: '지문 추가...', link: true },
+      ] },
+      { rows: [{ title: '암호 끄기', link: true }, { title: '암호 변경', link: true }] },
+      { rows: [{ title: '암호 요구', value: '즉시', chevron: false }] },
+    ],
+  },
+
+  '개인정보 보호 및 보안': {
+    desc: '앱이 위치, 사진, 카메라 등 데이터에 접근하는 권한을 관리합니다.',
+    sections: [
+      { rows: [
+        { title: '위치 서비스', value: '켬', icon: 'location', color: '#007AFF', page: { sections: [
+          { rows: [{ title: '위치 서비스', toggle: true }], footer: '앱과 웹 사이트가 사용자의 대략적인 위치 또는 정확한 위치를 사용하도록 허용합니다.' },
+          { showIf: '위치 서비스', rows: [{ title: '내 위치 공유' }] },
+          { showIf: '위치 서비스', rows: APPS.map((a) => ({ title: a.name, value: a.location, ...appTile(a.name) })) },
+          { showIf: '위치 서비스', rows: [{ title: '시스템 서비스' }] },
+        ] } },
+        { title: '추적', icon: 'tracking', color: '#FF9500', page: onoff('앱이 추적을 요청하도록 허용', false, '다른 회사의 앱과 웹 사이트에서 사용자의 활동을 추적하도록 앱이 요청할 수 있습니다.') },
+      ] },
+      { rows: [
+        { title: '캘린더', icon: 'calendar', color: '#FF3B30', page: permPage('캘린더') },
+        { title: '연락처', icon: 'contacts', color: '#8E8E93', page: permPage('연락처') },
+        { title: '사진', icon: 'flower', color: '#FFFFFF', fg: '#FF9500', page: permPage('사진', (a) => ({ title: a.name, value: a.photos, ...appTile(a.name) })) },
+        { title: 'Bluetooth', icon: 'bluetooth', color: '#007AFF', page: permPage('Bluetooth') },
+        { title: '마이크', icon: 'mic', color: '#FF9500', page: permPage('마이크', (a) => ({ title: a.name, toggle: !!a.mic, key: def(`mic:${a.name}`, !!a.mic), ...appTile(a.name) })) },
+        { title: '카메라', icon: 'camera', color: '#8E8E93', page: permPage('카메라', (a) => ({ title: a.name, toggle: !!a.camera, key: def(`cam:${a.name}`, !!a.camera), ...appTile(a.name) })) },
+      ] },
+      { header: '보안', rows: [
+        { title: '안전 확인', page: center('안전 확인', '다른 사람과 공유 중인 정보와 접근 권한을 확인하고 관리할 수 있습니다.') },
+        { title: '잠금 모드', value: '끔', page: { sections: [{ rows: [{ title: '잠금 모드 켜기', link: true }], footer: '매우 드문 고도화된 사이버 공격으로부터 기기를 보호하기 위한 선택적 보호 모드입니다.' }] } },
+      ] },
+    ],
+  },
+
+  '앱': {
+    hero: false,
+    navSearch: '앱 검색',                      // 위쪽 오른쪽 '앱 검색' 칸 (카테고리 이름으로 찾아요)
+    searchRows: () => [APP_DEFAULT_ROW, APP_HIDDEN_ROW, ...APP_CAT_ROWS],
+    sections: [
+      { rows: [APP_DEFAULT_ROW] },
+      { header: '카테고리', rows: APP_CAT_ROWS, footer: `설치된 앱 ${DEVICE.apps}개를 카테고리별로 모아 보여 줍니다. 카테고리를 누르면 그 안의 앱에 함께 적용되는 설정을 바꿀 수 있습니다.` },
+      { rows: [APP_HIDDEN_ROW] },
+    ],
+  },
+};
+
+// ---------- 아이콘 모음 (24x24 SVG) ----------
+// 새 아이콘을 만들면 여기에 이름을 붙여 추가하고 위에서 icon: '이름'으로 쓰면 돼요.
+const F = (d) => `<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">${d}</svg>`;
+const L = (d, w = 2) => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="${w}" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${d}</svg>`;
+const ICONS = {
+  airplane: F('<path d="M21 16v-2l-8-5V3.5c0-.83-.67-1.5-1.5-1.5S10 2.67 10 3.5V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5l8 2.5z"/>'),
+  wifi: F('<path d="M1 9l2 2c4.97-4.97 13.03-4.97 18 0l2-2C16.93 2.93 7.08 2.93 1 9zm8 8l3 3 3-3c-1.65-1.66-4.34-1.66-6 0zm-4-4l2 2c2.76-2.76 7.24-2.76 10 0l2-2C15.14 9.14 8.87 9.14 5 13z"/>'),
+  bluetooth: F('<path d="M17.71 7.71L12 2h-1v7.59L6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 11 14.41V22h1l5.71-5.71-4.3-4.29 4.3-4.29zM13 5.83l1.88 1.88L13 9.59V5.83zm1.88 10.46L13 18.17v-3.76l1.88 1.88z"/>'),
+  link: F('<path d="M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7c-2.76 0-5 2.24-5 5s2.24 5 5 5h4v-1.9H7c-1.71 0-3.1-1.39-3.1-3.1zM8 13h8v-2H8v2zm9-6h-4v1.9h4c1.71 0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4c2.76 0 5-2.24 5-5s-2.24-5-5-5z"/>'),
+  battery: F('<rect x="2.5" y="7.5" width="17" height="9" rx="3"/><rect x="20.4" y="10.3" width="1.7" height="3.4" rx=".85"/>'),
+  gear: L('<circle cx="12" cy="12" r="5.5" stroke-width="3"/><path stroke-width="3.2" stroke-linecap="butt" d="M12 2.5v3M12 18.5v3M2.5 12h3M18.5 12h3M5.3 5.3l2.1 2.1M16.6 16.6l2.1 2.1M5.3 18.7l2.1-2.1M16.6 7.4l2.1-2.1"/>'),
+  access: L('<circle cx="12" cy="12" r="9.5"/><circle cx="12" cy="7.3" r="1.5" fill="currentColor" stroke="none"/><path d="M7.2 9.8l4.8 1 4.8-1M12 10.8v3.4M12 14.2l-2.3 4.2M12 14.2l2.3 4.2"/>', 1.8),
+  search: L('<circle cx="10.5" cy="10.5" r="6"/><path d="M15 15l5 5"/>', 2.4),
+  sun: L('<circle cx="12" cy="12" r="4" fill="currentColor"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>'),
+  multitask: L('<rect x="8.5" y="5" width="12.5" height="14" rx="2.5"/><path d="M4 7.5h.01M4 12h.01M4 16.5h.01" stroke-width="3"/>'),
+  flower: L('<circle cx="12" cy="12" r="2"/><ellipse cx="12" cy="6.3" rx="2.6" ry="3.3"/><ellipse cx="12" cy="17.7" rx="2.6" ry="3.3"/><ellipse cx="6.3" cy="12" rx="3.3" ry="2.6"/><ellipse cx="17.7" cy="12" rx="3.3" ry="2.6"/>', 1.6),
+  toggles: L('<rect x="3" y="4" width="18" height="7" rx="3.5"/><circle cx="7.5" cy="7.5" r="1.6" fill="currentColor"/><rect x="3" y="13" width="18" height="7" rx="3.5"/><circle cx="16.5" cy="16.5" r="1.6" fill="currentColor"/>'),
+  camera: F('<circle cx="12" cy="12" r="3.2"/><path d="M9 2L7.17 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2h-3.17L15 2H9zm3 15c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5z"/>'),
+  homescreen: L('<rect x="5.5" y="2.5" width="13" height="19" rx="2.5"/><path d="M9 7h.01M12 7h.01M15 7h.01M9 10.5h.01M12 10.5h.01M15 10.5h.01M9 14h.01M12 14h.01M15 14h.01" stroke-width="2.4"/>'),
+  mode: '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 6a6 6 0 0 1 0 12z" fill="currentColor"/></svg>',
+  pencil: L('<path d="M4.5 19.5l1-4.2L16 4.8a2.1 2.1 0 0 1 3 3L8.6 18.3z"/><path d="M14.5 6.3l3 3"/>'),
+  bell: F('<path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.89 2 2 2zm6-6v-5c0-3.07-1.64-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.63 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"/>'),
+  speaker: F('<path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/>'),
+  moon: F('<path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z"/>'),
+  hourglass: L('<path d="M7 3h10M7 21h10M8 3v3l4 6 4-6V3M8 21v-3l4-6 4 6v3"/>'),
+  fingerprint: L('<path d="M7.5 5.2A8 8 0 0 1 20 11.5M4 9.5A8 8 0 0 0 4 12v3M8 12a4 4 0 0 1 8 0v1.5a13 13 0 0 1-1.2 5.5M12 12v2a10 10 0 0 1-2 6M8 15.5a9 9 0 0 1-1.5 4M16.5 19.5a15 15 0 0 0 1.5-5"/>', 1.7),
+  hand: F('<path d="M8 21c-2.2-1.1-3.5-3.4-3.5-6v-3.2a1.3 1.3 0 0 1 2.6 0V14h.6V5.2a1.3 1.3 0 0 1 2.6 0V11h.6V3.8a1.3 1.3 0 0 1 2.6 0V11h.6V5a1.3 1.3 0 0 1 2.6 0v7h.6V8.3a1.3 1.3 0 0 1 2.6 0V15c0 3.3-2.7 6-6 6z"/>'),
+  apps: F('<rect x="4" y="4" width="7" height="7" rx="1.5"/><rect x="13" y="4" width="7" height="7" rx="1.5"/><rect x="4" y="13" width="7" height="7" rx="1.5"/><rect x="13" y="13" width="7" height="7" rx="1.5"/>'),
+  ipad: L('<rect x="5" y="2.5" width="14" height="19" rx="2.5"/><path d="M10.5 18.5h3"/>'),
+  drive: L('<rect x="3" y="6.5" width="18" height="11" rx="3"/><path d="M3 12.5h18"/><path d="M16.5 15h.01" stroke-width="2.6"/>'),
+  airdrop: L('<circle cx="12" cy="13" r="1.6" fill="currentColor" stroke="none"/><path d="M8.6 16.4a4.8 4.8 0 1 1 6.8 0M5.8 19.2a8.8 8.8 0 1 1 12.4 0"/>', 1.8),
+  airplay: L('<path d="M7 17H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-2"/><path d="M12 14.5l4.5 6h-9z" fill="currentColor" stroke="none"/>'),
+  capture: L('<path d="M3 8V6a2 2 0 0 1 2-2h2M17 4h2a2 2 0 0 1 2 2v2M21 16v2a2 2 0 0 1-2 2h-2M7 20H5a2 2 0 0 1-2-2v-2"/><rect x="7.5" y="9" width="9" height="7" rx="1.5"/><circle cx="12" cy="12.5" r="1.6"/>', 1.8),
+  calendar: L('<rect x="3.5" y="5" width="17" height="15.5" rx="2.5"/><path d="M3.5 10h17M8 3v4M16 3v4"/>'),
+  refresh: L('<path d="M19.5 12a7.5 7.5 0 1 1-2.2-5.3M19.5 4v4.5H15"/>'),
+  book: L('<path d="M6 3.5h12v14H7.5A1.5 1.5 0 0 0 6 19zM6 19a1.5 1.5 0 0 0 1.5 1.5H18M9 8h6"/>'),
+  globe: L('<circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/>', 1.7),
+  key: L('<circle cx="8" cy="8" r="4"/><path d="M11 11l9 9M17 17l2.2-2.2M14.5 14.5l2-2"/>'),
+  keyboard: L('<rect x="2" y="6" width="20" height="12" rx="2.5"/><path d="M6 10h.01M10 10h.01M14 10h.01M18 10h.01M8 14h8"/>'),
+  tv: L('<rect x="3" y="4.5" width="18" height="12" rx="2"/><path d="M8.5 20.5h7M12 16.5v4"/>'),
+  doc: L('<path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M9 13h6M9 17h6"/>'),
+  transfer: L('<path d="M4 9h14l-3.5-3.5M20 15H6l3.5 3.5"/>'),
+  chart: F('<rect x="4" y="12" width="3.5" height="8" rx="1"/><rect x="10.25" y="8" width="3.5" height="12" rx="1"/><rect x="16.5" y="4" width="3.5" height="16" rx="1"/>'),
+  voiceover: L('<circle cx="10" cy="5" r="1.6" fill="currentColor" stroke="none"/><path d="M4 9l6 1.2L16 9M10 10.2v4M10 14.2l-2.5 5.3M10 14.2l2.5 5.3M18 12a3 3 0 0 1 0 4M20.5 10a6 6 0 0 1 0 8"/>', 1.8),
+  zoom: L('<circle cx="10.5" cy="10.5" r="6.5"/><path d="M15.5 15.5 21 21M10.5 7.5v6M7.5 10.5h6"/>'),
+  motion: L('<circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="4.5" stroke-dasharray="2 2.2"/>', 1.8),
+  speech: F('<path d="M5 4.5h14A2.5 2.5 0 0 1 21.5 7v8a2.5 2.5 0 0 1-2.5 2.5h-7.5L7 21v-3.5H5A2.5 2.5 0 0 1 2.5 15V7A2.5 2.5 0 0 1 5 4.5z"/>'),
+  brackets: L('<path d="M4 9V5h4M16 5h4v4M20 15v4h-4M8 19H4v-4"/>', 2.2),
+  touch: L('<path d="M9 11V5.5a1.5 1.5 0 0 1 3 0V11M12 10.5V9a1.5 1.5 0 0 1 3 0v2M15 10.5a1.5 1.5 0 0 1 3 0V15a6 6 0 0 1-6 6h-1a6 6 0 0 1-4.6-2.2L4 15.5a1.5 1.5 0 0 1 2.3-1.9L9 16"/>', 1.8),
+  switchgrid: L('<rect x="4" y="4" width="7" height="7" rx="2"/><rect x="13" y="4" width="7" height="7" rx="2"/><rect x="4" y="13" width="7" height="7" rx="2"/><rect x="13" y="13" width="7" height="7" rx="2"/>', 1.8),
+  wave: L('<path d="M4 10v4M8 7v10M12 4v16M16 7v10M20 10v4"/>'),
+  eye: L('<path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/>'),
+  headtrack: L('<circle cx="12" cy="9" r="4"/><path d="M5 20a7 7 0 0 1 14 0M3 7V4h3M21 7V4h-3"/>'),
+  topbutton: L('<rect x="5" y="9" width="14" height="12" rx="2.5"/><path d="M9 3h6M12 6V3"/>'),
+  ear: L('<path d="M7 9a5 5 0 0 1 10 0c0 3-3 4-3 7a3 3 0 0 1-6 0M10 9a2 2 0 0 1 4 0"/>'),
+  soundrec: L('<circle cx="12" cy="12" r="9"/><path d="M8 11v2M10.7 9v6M13.3 8v8M16 11v2"/>', 1.8),
+  av: L('<path d="M3 10v4h3l4 4V6l-4 4zM15 9a4 4 0 0 1 0 6M18 6a8 8 0 0 1 0 12"/>'),
+  lock: L('<rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/>'),
+  location: F('<path d="M20.5 3.5 3.5 10.6l7.4 2.5 2.5 7.4z"/>'),
+  tracking: L('<path d="M7 17 17 7M9 7h8v8"/>', 2.2),
+  contacts: L('<circle cx="12" cy="12" r="9"/><circle cx="12" cy="10" r="3"/><path d="M6.5 18.5a6.5 6.5 0 0 1 11 0"/>'),
+  mic: F('<path d="M12 14c1.66 0 2.99-1.34 2.99-3L15 5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3zm5.3-3c0 3-2.54 5.1-5.3 5.1S6.7 14 6.7 11H5c0 3.41 2.72 6.23 6 6.72V21h2v-3.28c3.28-.48 6-3.3 6-6.72h-1.7z"/>'),
+  user: L('<circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/>'),
+  bed: L('<path d="M3 18V6M3 14h18v4M21 14v-2a3 3 0 0 0-3-3h-7v5"/><circle cx="7" cy="11" r="1.8"/>'),
+  briefcase: L('<rect x="3" y="7" width="18" height="13" rx="2"/><path d="M9 7V5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2M3 13h18"/>'),
+  check: L('<path d="M5 12.5l4.5 4.5L19 7.5"/>', 2.6),
+  distance: L('<path d="M4 12h16M7 9l-3 3 3 3M17 9l3 3-3 3"/>'),
+  nosign: L('<circle cx="12" cy="12" r="8.5"/><path d="M6 6l12 12"/>'),
+  gamepad: L('<path d="M7 8h10a4 4 0 0 1 3.9 4.9l-.9 4a2.5 2.5 0 0 1-4.3 1.1L14 16h-4l-1.7 2a2.5 2.5 0 0 1-4.3-1.1l-.9-4A4 4 0 0 1 7 8z"/><path d="M8 11v3M6.5 12.5h3M15.5 12h.01M17.5 13.5h.01"/>'),
+  webcheck: L('<rect x="5" y="4" width="14" height="17" rx="2.5"/><path d="M9 4V2.8h6V4M9 12.5l2.2 2.2L15.5 10"/>'),
+  badge: L('<path d="M12 3l2.1 1.6 2.6-.3.9 2.5 2.4 1.1-.3 2.6L21 12l-1.6 2.1.3 2.6-2.5.9-1.1 2.4-2.6-.3L12 21l-2.1-1.6-2.6.3-.9-2.5-2.4-1.1.3-2.6L3 12l1.6-2.1-.3-2.6 2.5-.9 1.1-2.4 2.6.3z"/><path d="M8.8 12.2l2.2 2.2 4.2-4.4"/>', 1.6),
+  window: L('<rect x="3.5" y="5" width="17" height="14" rx="2.5"/><path d="M3.5 9h17"/><rect x="6.5" y="12.5" width="3.2" height="3.2" rx=".6" fill="currentColor" stroke="none"/>'),
+  bubbleAlert: L('<path d="M5 5h14a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-7l-5 4v-4H5a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2z"/><path d="M12 8.5v3.5M12 14.5h.01"/>'),
+  cloud: F('<path d="M7.5 19h10a4.5 4.5 0 0 0 .6-8.96A6.5 6.5 0 0 0 5.6 9.3 4.9 4.9 0 0 0 7.5 19z"/>'),
+  family: L('<circle cx="9" cy="8" r="3"/><circle cx="16.5" cy="9.5" r="2.5"/><path d="M3.5 19a5.5 5.5 0 0 1 11 0M14 19a4.5 4.5 0 0 1 7 0"/>'),
+  target: L('<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.5" fill="currentColor" stroke="none"/>'),
+  bag: L('<path d="M5 8h14l-1 12H6z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/>'),
+};
+
+/* ==========================================================
+   아래는 화면을 그리는 부분이라 안 건드려도 돼요
+   ========================================================== */
+
+const $ = (id) => document.getElementById(id);
+const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const fmt = (s) => esc(s).replace(/\[([^\]]+)\]/g, '<span class="lnk">$1</span>');
+const wide = window.matchMedia('(min-width: 700px)');
+const darkMQ = window.matchMedia('(prefers-color-scheme: dark)');
+const items = { profile: { title: PROFILE.name, avatar: true, page: '프로필' } };
+GROUPS.flat().forEach((it) => { items[it.title] = it; });
+const nav = { id: null, stack: [] };   // 지금 보고 있는 메뉴와, 그 안으로 들어간 화면들
+let REG = [];                          // 지금 화면에서 누르면 들어가는 줄들
+let CUR_PATH = [];                     // 지금 화면의 위치 (스위치 이름을 정할 때 씀)
+let CUR_SIDX = 0;
+let CUR_SDEF;
+let WIFI_ON_AT = Date.now();
+let refreshTimer = null;
+let APPQ = '';                         // 오른쪽 위 '앱 검색' 칸에 입력한 글자
+
+const root = document.documentElement;
+root.style.setProperty('--radius', SETTINGS.radius + 'px');
+const syncBarColor = () => { $('themeColor').content = getComputedStyle(root).getPropertyValue('--bg').trim(); };
+
+/* ---------- 바꾼 값 저장 ---------- */
+const STORE_KEY = 'settings.state.v1';
+let STATE = {};
+try { STATE = JSON.parse(localStorage.getItem(STORE_KEY) || '{}') || {}; } catch (e) { STATE = {}; }
+def('appearanceAuto', SETTINGS.theme === 'auto');
+def('appearance', SETTINGS.theme === 'light' ? 'light' : 'dark');
+def('displayZoom', '기본');
+const save = () => { try { localStorage.setItem(STORE_KEY, JSON.stringify(STATE)); } catch (e) {} };
+const has = (k) => Object.prototype.hasOwnProperty.call(STATE, k);
+const get = (k, fb) => (has(k) ? STATE[k] : (k in DEFAULTS ? DEFAULTS[k] : fb));
+
+function set(key, val) {
+  if (key === 'airplane') {
+    if (val) { STATE._prev = { wifi: get('wifi'), bt: get('bt') }; STATE.wifi = false; STATE.bt = false; }
+    else if (STATE._prev) { STATE.wifi = STATE._prev.wifi; STATE.bt = STATE._prev.bt; delete STATE._prev; if (STATE.wifi) WIFI_ON_AT = Date.now(); }
+  }
+  if (key === 'wifi' && val) WIFI_ON_AT = Date.now();
+  if (key === 'appearance') STATE.appearanceAuto = false;
+  STATE[key] = val;
+  save();
+  applyEffects();
+}
+
+const pathKey = (title, path = CUR_PATH) => [...path, title].join('/');
+const rowKey = (r, path = CUR_PATH) => r.key || pathKey(r.title, path);
+const toggleOn = (r, path) => !!get(rowKey(r, path), !!r.toggle);
+const allRows = (page) => [...(page.rows || []), ...(page.sections || []).flatMap((s) => s.rows || [])];
+function cond(expr, page, path = CUR_PATH) {
+  if (!expr) return true;
+  const neg = expr[0] === '!';
+  const e = neg ? expr.slice(1) : expr;
+  let v = true;
+  if (e[0] === '@') v = !!get(e.slice(1));
+  else { const r = allRows(page).find((x) => x.title === e && 'toggle' in x); if (r) v = toggleOn(r, path); }
+  return neg ? !v : v;
+}
+
+/* 아래 화면의 선택·스위치 값을 위 줄 오른쪽 글씨로 보여 주기 */
+function derivedValue(r) {
+  if (r.valueFrom) return get(r.valueFrom.slice(1)) ? (r.valueOn || '켬') : (r.valueOff || '끔');
+  if (!r.page) return r.value;
+  const childPath = [...CUR_PATH, r.title];
+  const secs = r.page.sections || [];
+  for (let i = 0; i < secs.length; i++) {
+    const chs = (secs[i].rows || []).filter((x) => x.choice);
+    if (chs.length) {
+      const k = chs[0].group || `${childPath.join('/')}#${i}`;
+      return get(k, (chs.find((x) => x.check) || {}).title) ?? r.value;
+    }
+  }
+  if (r.value === '켬' || r.value === '끔') {
+    const t = secs[0] && (secs[0].rows || [])[0];
+    if (t && 'toggle' in t) return toggleOn(t, childPath) ? '켬' : '끔';
+  }
+  return r.value;
+}
+
+/* ---------- 실제로 동작하는 효과 ---------- */
+function applyEffects() {
+  root.classList.remove('auto', 'light', 'dark');
+  root.classList.add(get('appearanceAuto') ? 'auto' : (get('appearance') === 'light' ? 'light' : 'dark'));
+  [['boldtext', 'bold'], ['btnshape', 'btnShape'], ['oolabel', 'onoffLabel'], ['notransp', 'noTransp'], ['contrast', 'contrast'], ['nomotion', 'reduceMotion']]
+    .forEach(([cls, k]) => root.classList.toggle(cls, !!get(k)));
+  const b = +get('brightness', 0.5);
+  const f = [];
+  if (b > 0.5) f.push(`brightness(${(1 + (b - 0.5) * 0.3).toFixed(3)})`);
+  if (get('whitePoint')) f.push('brightness(.82)');
+  if (get('smartInvert')) f.push('invert(1) hue-rotate(180deg)');
+  else if (get('classicInvert')) f.push('invert(1)');
+  if (get('grayscale')) f.push('grayscale(1)');
+  $('app').style.filter = f.join(' ');
+  $('dim').style.opacity = b < 0.5 ? ((0.5 - b) * 1.3).toFixed(3) : '0';
+  $('tint').style.opacity = String(get('nightShift') ? 0.15 + 0.35 * +get('nightTemp', 0.5) : (get('trueTone') ? 0.07 : 0));
+  const dz = { '더 큰 텍스트': 1.12, '기본': 1, '더 많은 공간': 0.9 }[get('displayZoom')] || 1;
+  root.style.setProperty('--tz', (dz * (0.85 + 0.3 * +get('textSize', 0.5))).toFixed(3));
+  syncBarColor();
+}
+const isDark = () => root.classList.contains('dark') || (root.classList.contains('auto') && darkMQ.matches);
+
+/* 소리: 알림음 미리듣기, 키보드 클릭 */
+let AC = null;
+function audio() {
+  if (!AC) { const C = window.AudioContext || window.webkitAudioContext; if (C) AC = new C(); }
+  if (AC && AC.state === 'suspended') AC.resume();
+  return AC;
+}
+function output(ctx, vol) {
+  const g = ctx.createGain();
+  g.gain.value = vol;
+  if (!get('mono') && ctx.createStereoPanner) {
+    const p = ctx.createStereoPanner();
+    p.pan.value = (+get('balance', 0.5) - 0.5) * 2;
+    g.connect(p); p.connect(ctx.destination);
+  } else g.connect(ctx.destination);
+  return g;
+}
+const TONE_NOTES = {
+  '노트': [[1046, 0.12], [1318, 0.22]],
+  '차임': [[1318, 0.3], [988, 0.45]],
+  '오로라': [[784, 0.14], [988, 0.14], [1175, 0.32]],
+  '대나무': [[880, 0.08], [880, 0.08], [1320, 0.16]],
+  '화음': [[523, 0.5, [659, 784]]],
+  '팝콘': [[1500, 0.05], [1700, 0.05], [1900, 0.06]],
+};
+function playTone(name) {
+  const ctx = audio();
+  if (!ctx || name === '없음') return;
+  const out = output(ctx, 0.4 * +get('volume', 0.6));
+  let t = ctx.currentTime + 0.02;
+  if (name === '휙') {
+    const o = ctx.createOscillator(); const g = ctx.createGain();
+    o.frequency.setValueAtTime(300, t); o.frequency.exponentialRampToValueAtTime(1400, t + 0.22);
+    g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(0.6, t + 0.08); g.gain.exponentialRampToValueAtTime(0.001, t + 0.25);
+    o.connect(g); g.connect(out); o.start(t); o.stop(t + 0.3);
+    return;
+  }
+  (TONE_NOTES[name] || TONE_NOTES['노트']).forEach(([f, d, chord]) => {
+    [f, ...(chord || [])].forEach((fr) => {
+      const o = ctx.createOscillator(); const g = ctx.createGain();
+      o.type = 'sine'; o.frequency.value = fr;
+      g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(0.8, t + 0.01); g.gain.exponentialRampToValueAtTime(0.001, t + d);
+      o.connect(g); g.connect(out); o.start(t); o.stop(t + d + 0.05);
+    });
+    t += d * 0.9;
+  });
+}
+function keyClick() {
+  const ctx = audio();
+  if (!ctx) return;
+  const out = output(ctx, 0.15 * +get('volume', 0.6));
+  const o = ctx.createOscillator(); const g = ctx.createGain(); const t = ctx.currentTime;
+  o.type = 'square'; o.frequency.value = 1900;
+  g.gain.setValueAtTime(0.5, t); g.gain.exponentialRampToValueAtTime(0.001, t + 0.02);
+  o.connect(g); g.connect(out); o.start(t); o.stop(t + 0.03);
+}
+/* VoiceOver / 선택 항목 말하기: 누른 항목 이름을 읽어 줌 */
+function speak(text) {
+  if (!(get('voiceover') || get('speakSel')) || !('speechSynthesis' in window) || !text) return;
+  speechSynthesis.cancel();
+  const u = new SpeechSynthesisUtterance(text);
+  u.lang = 'ko-KR';
+  u.rate = 0.6 + +get('speechRate', 0.5);
+  speechSynthesis.speak(u);
+}
+
+function toast(msg) {
+  const t = $('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toast.timer);
+  toast.timer = setTimeout(() => t.classList.remove('show'), 1800);
+}
+
+const UI = {
+  info: '<svg class="info" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 11v6" stroke-linecap="round"/><circle cx="12" cy="7.5" r="1.2" fill="currentColor" stroke="none"/></svg>',
+  updown: '<svg class="ud" viewBox="0 0 10 18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 7l3-3 3 3M2 11l3 3 3-3"/></svg>',
+  check: '<svg class="ck" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>',
+  spin: '<svg class="spin" viewBox="0 0 24 24" aria-hidden="true">' + Array.from({ length: 8 }, (_, k) => `<line x1="12" y1="2.5" x2="12" y2="7" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" opacity="${(k + 1) / 8}" transform="rotate(${k * 45} 12 12)"/>`).join('') + '</svg>',
+  sunS: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="3.5" fill="currentColor"/><path d="M12 5v.01M12 19v.01M5 12h.01M19 12h.01M7 7h.01M17 17h.01M7 17h.01M17 7h.01"/></svg>',
+  volS: '<svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M5 9.5v5h3.2l4.3 4V5.5L8.2 9.5H5z"/></svg>',
+  volL: '<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" aria-hidden="true"><path d="M3 9.5v5h3.2l4.3 4V5.5L6.2 9.5H3z" fill="currentColor" stroke="none"/><path d="M14.2 9.2a4 4 0 0 1 0 5.6M16.9 6.6a7.6 7.6 0 0 1 0 10.8M19.6 4a11.3 11.3 0 0 1 0 16"/></svg>',
+  sunL: '<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4" fill="currentColor"/><path d="M12 2v2.5M12 19.5V22M2 12h2.5M19.5 12H22M4.9 4.9l1.8 1.8M17.3 17.3l1.8 1.8M4.9 19.1l1.8-1.8M17.3 6.7l1.8-1.8"/></svg>',
+  tick: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>',
+  lock: '<svg class="lk" viewBox="0 0 13 16" aria-hidden="true"><rect x="1" y="7" width="11" height="8.5" rx="2" fill="currentColor"/><path d="M3.5 7V5a3 3 0 0 1 6 0v2" fill="none" stroke="currentColor" stroke-width="1.8"/></svg>',
+};
+const wifiBars = (n) => `<svg class="wbars" viewBox="0 0 20 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="10" cy="13.5" r="1.6" fill="currentColor" stroke="none"/><path d="M6.6 10.2a4.8 4.8 0 0 1 6.8 0" opacity="${n >= 1 ? 1 : 0.3}"/><path d="M3.8 7.4a8.8 8.8 0 0 1 12.4 0" opacity="${n >= 2 ? 1 : 0.3}"/><path d="M1 4.6a12.8 12.8 0 0 1 18 0" opacity="${n >= 3 ? 1 : 0.3}"/></svg>`;
+
+function tile(o, big) {
+  if (!o) return '';
+  if (o.avatar) return `<span class="av${big ? ' lg' : ''}">${esc(PROFILE.initial)}</span>`;
+  const inner = o.text ? `<span class="tx">${esc(o.text)}</span>` : (ICONS[o.icon] || '');
+  const color = o.icon === 'battery' && get('lowPower') ? '#FFCC00' : o.color;
+  return `<span class="i${big ? ' lg' : ''}" style="background-color:${esc(color || '#8E8E93')};color:${esc(o.fg || '#fff')}">${inner}</span>`;
+}
+
+function footer(f, page) {
+  const list = Array.isArray(f) ? f.filter((x) => cond(x.showIf, page)).map((x) => x.text) : [f];
+  if (!list.length) return '';
+  return `<div class="foot">${list.flatMap((t) => String(t).split('\n\n')).map((p) => `<p>${fmt(p)}</p>`).join('')}</div>`;
+}
+
+function koTime(d) {
+  if (get('h24')) return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+  return `${(d.getHours() % 12) || 12}:${String(d.getMinutes()).padStart(2, '0')}`;
+}
+
+function timeLabel(d) {
+  if (get('h24')) return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+  const h = d.getHours();
+  return `${h < 12 ? '오전' : '오후'} ${(h % 12) || 12}:${String(d.getMinutes()).padStart(2, '0')}`;
+}
+
+/* 안쪽 화면의 줄 하나 */
+function irow(r) {
+  if (r.slider !== undefined) {
+    const key = rowKey(r);
+    const p = Math.max(0, Math.min(1, +get(key, r.slider))) * 100;
+    const [a, b] = r.ends ? r.ends.map((t) => `<span class="se">${esc(t)}</span>`) : r.endIcons === 'volume' ? [UI.volS, UI.volL] : [UI.sunS, UI.sunL];
+    return `<div class="ir sld" data-t="${esc(r.title)}">${a}<div class="trk" data-sl="${esc(key)}"><i style="width:${p}%"></i><b style="left:${p}%"></b></div>${b}</div>`;
+  }
+  const hasI = !!(r.icon || r.text);
+  const isToggle = 'toggle' in r;
+  let attrs = '';
+  let checked = !!r.check;
+  if (isToggle) { const k = rowKey(r); def(k, !!r.toggle); attrs += ` data-tg="${esc(k)}"`; }
+  if (r.choice) {
+    const k = r.group || `${CUR_PATH.join('/')}#${CUR_SIDX}`;
+    def(k, CUR_SDEF);
+    checked = get(k) === r.title;
+    attrs += ` data-ch="${esc(k)}" data-v="${esc(r.title)}"${r.sound ? ' data-snd="1"' : ''}`;
+  } else if (r.multi) {
+    const k = pathKey(r.title) + '#m';
+    def(k, !!r.check);
+    checked = !!get(k);
+    attrs += ` data-mc="${esc(k)}"`;
+  }
+  if (r.action) attrs += ` data-act="${esc(r.action)}"`;
+  const sub = typeof r.sub === 'function' ? r.sub() : r.sub;
+  const value = (r.value != null || r.valueFrom) ? derivedValue(r) : null;
+  let right = '';
+  if (value != null) right += `<span class="iv">${esc(value)}</span>`;
+  if (r.popup) right += `<span class="iv">${esc(r.popup)}</span>${UI.updown}`;
+  if (r.info) right += UI.info;
+  if (isToggle) right += `<span class="tg${get(rowKey(r)) ? ' on' : ''}" aria-hidden="true"><i></i></span>`;
+  if (checked) right += UI.check;
+  const isPick = r.choice || r.multi;
+  const chev = r.chevron ?? !(isToggle || r.link || r.danger || r.info || isPick || r.check || r.popup || r.note || r.action);
+  if (chev) right += '<span class="chev"></span>';
+  const k = r.page && !r.action ? REG.push(r) - 1 : -1;
+  if (k >= 0) attrs += ` data-k="${k}"`;
+  if (k >= 0 && r.needs) attrs += ` data-need="${esc(r.needs)}"`;
+  const tap = chev || r.link || r.danger || r.info || r.popup || k >= 0 || isToggle || isPick || r.action;
+  const cls = ['ir', hasI && 'hasi', r.indent && 'ind', tap && 'tap', sub && 'two'].filter(Boolean).join(' ');
+  const tcls = r.link ? ' lnk' : r.danger ? ' dng' : '';
+  let html = `<div class="${cls}" data-t="${esc(r.title)}"${attrs}>${hasI ? tile(r) : ''}<div class="ib"><div class="itx"><span class="il${tcls}">${esc(r.title)}</span>${sub ? `<span class="isub">${esc(sub)}</span>` : ''}</div>${right}</div></div>`;
+  if (r.note) html += `<div class="inote">${fmt(r.note)}</div>`;
+  return html;
+}
+
+/* 특별한 카드들 */
+const OTHER_NET = { title: '기타...', indent: true, chevron: false, page: { sections: [{ rows: [{ title: '이름', value: '네트워크 이름', chevron: false }, { title: '보안', value: '없음', page: { sections: [{ rows: pick(['없음', 'WEP', 'WPA2/WPA3 개인용', 'WPA3 개인용'], '없음') }] } }] }] } };
+function scheduleRefresh(ms) {
+  clearTimeout(refreshTimer);
+  refreshTimer = setTimeout(() => { if (nav.id === 'Wi-Fi' && !nav.stack.length && get('wifi')) refresh(); }, ms);
+}
+const CUSTOM = {
+  // 스크린 타임 활동: 이 앱이 화면에 열려 있던 실제 시간을 요일별 막대로 보여 줘요
+  stActivity() {
+    tickUsage();
+    const now = new Date();
+    const days = Array.from({ length: 7 }, (_, i) => new Date(now.getTime() - (6 - i) * 86400000));
+    const vals = days.map((d) => USAGE[dayKey(d)] || 0);
+    const today = vals[6];
+    const used = vals.filter((v) => v > 0);
+    const avg = used.length ? used.reduce((a, b) => a + b, 0) / used.length : 0;
+    const max = Math.max(60, ...vals);
+    const bars = vals.map((v, i) => {
+      const h = v > 0 ? Math.max(4, v / max * 100) : 0;
+      return `<div class="ubar${i === 6 ? ' tdy' : ''}" style="height:${h}px">${i === 6 ? `<i style="height:${h}px"></i>` : ''}</div>`;
+    }).join('');
+    const labels = days.map((d, i) => `<span${i === 6 ? ' class="tdy"' : ''}>${'일월화수목금토'[d.getDay()]}</span>`).join('');
+    const all = irow({ title: '모든 활동 보기', page: { sections: [
+      { header: '오늘', rows: [{ title: '사용 시간', value: fmtDur(today), chevron: false }] },
+      { header: '가장 많이 사용함', rows: [{ title: '설정', value: fmtDur(today), icon: 'gear', color: '#8E8E93', chevron: false }],
+        footer: '이 앱이 화면에 열려 있던 시간을 기록합니다.' },
+    ] } });
+    return `<div class="card use"><div class="useb"><div class="ustats"><div><span>일일 평균</span><b>${fmtDur(avg)}</b></div><div class="tdy"><span>오늘</span><b>${fmtDur(today)}</b></div></div>
+      <div class="uchart">${bars}<span class="uavg">업데이트: ${timeLabel(now)}</span></div><div class="udays">${labels}</div>
+      <div class="ulist" style="margin-top:14px">${all}</div></div></div>`;
+  },
+  // Wi-Fi를 켜면 잠시 검색하다가 네트워크가 하나씩 나타나요
+  networks() {
+    const elapsed = Date.now() - WIFI_ON_AT;
+    const n = Math.max(0, Math.min(NETWORKS.length, Math.floor((elapsed - 1200) / 700) + 1));
+    if (n < NETWORKS.length) scheduleRefresh(Math.max(120, 1200 + n * 700 - elapsed));
+    const rows = NETWORKS.slice(0, n).map((w) => `<div class="ir tap ind net" data-t="${esc(w.name)}"><div class="ib"><div class="itx"><span class="il">${esc(w.name)}</span></div>${w.lock ? UI.lock : ''}${wifiBars(w.bars)}${UI.info}</div></div>`).join('');
+    return `<div class="card">${rows}${irow(OTHER_NET)}</div>`;
+  },
+  center(s) {
+    const [a, b] = s.lines || [];
+    return `<div class="card cmsg"><div class="t1">${esc(a)}</div>${b ? `<div class="t2">${esc(b)}</div>` : ''}</div>`;
+  },
+  storage(s) {
+    const d = s.data === 'icloud' ? ICLOUD : STORAGE;
+    const used = d.parts.reduce((t, p) => t + p.size, 0);
+    const bar = d.parts.map((p) => `<i style="width:${p.size / d.total * 100}%;background:${esc(p.color)}"></i>`).join('');
+    const leg = d.parts.map((p) => `<span><b style="background:${esc(p.color)}"></b>${esc(p.name)}</span>`).join('');
+    return `<div class="card stor"><div class="st"><span>${esc(d.label)}</span><span class="su">${d.total}GB 중 ${used.toFixed(1)}GB 사용됨</span></div><div class="sbar">${bar}</div><div class="sleg">${leg}</div></div>`;
+  },
+  // 라이트/다크를 누르면 실제로 화면 모드가 바뀌어요
+  appearance() {
+    const dark = isDark();
+    const fig = (name, cls, mode, on) => `<figure data-ap="${mode}" data-t="${name}"><div class="mock ${cls}"><i></i><i></i><i></i><i></i><i></i></div><span>${name}</span><span class="radio${on ? ' on' : ''}">${on ? UI.tick : ''}</span></figure>`;
+    return `<div class="card appr">${fig('라이트', 'lt', 'light', !dark)}${fig('다크', 'dk', 'dark', dark)}</div>`;
+  },
+  wallpaper() {
+    const now = new Date();
+    const d = `${now.getMonth() + 1}월 ${now.getDate()}일 ${'일월화수목금토'[now.getDay()]}요일`;
+    const grid = '<i></i>'.repeat(16);
+    return `<div class="card wall"><figure><div class="wp"><div class="wdate">${d}</div><div class="wt">${koTime(now)}</div></div><span class="pill">사용자화</span></figure><figure><div class="wp"><div class="wg">${grid}</div></div><span class="pill">사용자화</span></figure></div>`;
+  },
+  prepare() {
+    return `<div class="card prep"><svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="3" stroke-linejoin="round" aria-hidden="true"><rect x="6" y="10" width="24" height="34" rx="4"/><rect x="34" y="20" width="24" height="34" rx="4"/><path d="M22 52h8l-3-3M42 12h-8l3 3" stroke-linecap="round"/></svg><div class="t1">새로운 iPad 준비</div><div class="t2">앱과 데이터를 새로운 iPad로 옮길 준비를 합니다.</div><div class="t3">시작하기</div></div>`;
+  },
+  // 글자 입력칸처럼 보이는 카드 (눌러도 입력되지 않아요)
+  field(s) {
+    return `<div class="card fld"><span>${esc(s.value)}</span><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10" fill="currentColor"/><path d="M8.5 8.5l7 7M15.5 8.5l-7 7" stroke="var(--card)" stroke-width="2" stroke-linecap="round"/></svg></div>`;
+  },
+  // 알림 표시 위치 (잠금 화면 / 알림 센터 / 배너) — 각각 눌러서 켜고 끌 수 있어요
+  alerts() {
+    const fig = (name, bars) => {
+      const k = `${CUR_PATH.join('/')}#al-${name}`;
+      def(k, true);
+      const on = !!get(k);
+      return `<figure class="afig" data-tg="${esc(k)}" data-t="${name}"><div class="amock">${bars.map((y, i) => `<i style="top:${y}px${i === 0 && name === '잠금 화면' ? ';left:18px;right:18px;height:7px' : ''}"></i>`).join('')}</div><span>${name}</span><span class="radio${on ? ' on' : ''}">${on ? UI.tick : ''}</span></figure>`;
+    };
+    return `<div class="card alerts">${fig('잠금 화면', [10, 58, 74])}${fig('알림 센터', [10, 26, 42])}${fig('배너', [8])}</div>`;
+  },
+};
+
+function section(s, i, page) {
+  if (!cond(s.showIf, page)) return '';
+  CUR_SIDX = i;
+  CUR_SDEF = s.rows ? (s.rows.find((r) => r.choice && r.check) || {}).title : undefined;
+  let h = '<div class="sec">';
+  if (s.header) h += `<h3 class="sh" data-t="${esc(s.header)}">${esc(s.header)}${s.spinner ? UI.spin : ''}</h3>`;
+  if (s.custom && CUSTOM[s.custom]) h += CUSTOM[s.custom](s);
+  else if (s.rows && s.rows.length) h += `<div class="card">${s.rows.map(irow).join('')}</div>`;
+  if (s.footer) h += footer(s.footer, page);
+  return h + '</div>';
+}
+
+function hero(item, page) {
+  CUR_SIDX = 'h';
+  CUR_SDEF = page.rows ? (page.rows.find((r) => r.choice && r.check) || {}).title : undefined;
+  let h = `<div class="sec"><div class="card hero${item.avatar ? ' center' : ''}"><div class="hh">${tile(item, true)}<div class="ht">${esc(item.title)}</div>`;
+  if (item.avatar) h += `<div class="hd">${esc(PROFILE.sub)}</div>`;
+  if (page.desc) h += `<div class="hd">${fmt(page.desc)}</div>`;
+  h += '</div>';
+  if (page.rows && page.rows.length) h += `<div class="hrows">${page.rows.map(irow).join('')}</div>`;
+  h += '</div>';
+  if (page.footer) h += footer(page.footer, page);
+  return h + '</div>';
+}
+
+/* 왼쪽 메뉴 */
+function menuValue(it) {
+  if (it.valueFrom) return get(it.valueFrom.slice(1)) ? (it.valueOn || '켬') : (it.valueOff || '끔');
+  return it.value;
+}
+function toggleRowHTML(it, body) {
+  const key = it.key || it.title;
+  def(key, !!it.toggle);
+  return `<div class="r x" data-tg="${esc(key)}" data-t="${esc(it.title)}">${body}<span class="tg${get(key) ? ' on' : ''}" aria-hidden="true"><i></i></span></div>`;
+}
+function menuRow(it) {
+  if ('toggle' in it) return toggleRowHTML(it, `${tile(it)}<span class="rl">${esc(it.title)}</span>`);
+  const val = menuValue(it);
+  const v = val ? `<span class="rv">${esc(val)}</span>` : '';
+  return `<button class="r" type="button" data-id="${esc(it.title)}">${tile(it)}<span class="rl">${esc(it.title)}</span>${v}<span class="chev"></span></button>`;
+}
+function markMenu() {
+  $('menu').querySelectorAll('.r.on').forEach((el) => el.classList.remove('on'));
+  const btn = [...$('menu').querySelectorAll('.r[data-id]')].find((el) => el.dataset.id === nav.id);
+  if (btn) btn.classList.add('on');
+}
+function renderMenu() {
+  const profile = `<div class="c pf"><button class="r" type="button" data-id="profile">${tile(items.profile)}<span class="rb"><span class="pn">${esc(PROFILE.name)}</span><span class="ps">${esc(PROFILE.sub)}</span></span><span class="chev"></span></button></div>`;
+  $('menu').innerHTML = profile + GROUPS.map((g) => `<div class="c">${g.map(menuRow).join('')}</div>`).join('');
+  markMenu();
+}
+
+/* 검색: 메뉴 이름 + 안쪽 화면, 그 안의 하위 화면까지 */
+const INDEX = [];
+function buildIndex() {
+  const seen = new Set();
+  const add = (e) => { const key = `${e.id}|${e.path.join('>')}|${e.title}`; if (e.title && !seen.has(key)) { seen.add(key); INDEX.push(e); } };
+  const walk = (id, page, path, label) => {
+    if (!page) return;
+    const rows = [...(page.rows || []), ...(page.sections || []).flatMap((s) => { if (s.header) add({ id, title: s.header, path, label }); return s.rows || []; })];
+    rows.forEach((r) => {
+      if (r.slider !== undefined) return;
+      add({ id, title: r.title, path, label });
+      if (r.page) walk(id, r.page, [...path, r.title], `${label} › ${r.title}`);
+    });
+  };
+  add({ id: 'profile', title: PROFILE.name, path: [], label: null });
+  walk('profile', PAGES['프로필'], [], PROFILE.name);
+  GROUPS.flat().forEach((it) => { add({ id: it.title, title: it.title, path: [], label: null }); walk(it.title, PAGES[it.title], [], it.title); });
+}
+
+function renderResults(q) {
+  const ql = q.toLowerCase();
+  const hits = INDEX.map((e, i) => ({ e, i })).filter(({ e }) => e.title.toLowerCase().includes(ql))
+    .sort((a, b) => (a.e.label ? 1 : 0) - (b.e.label ? 1 : 0) || a.e.path.length - b.e.path.length);
+  if (!hits.length) { $('results').innerHTML = `<div class="nores">‘${esc(q)}’에 대한 결과 없음</div>`; return; }
+  $('results').innerHTML = `<div class="c">${hits.slice(0, 80).map(({ e, i }) => {
+    const it = items[e.id];
+    const body = `${tile(it)}<span class="rb"><span class="rt">${esc(e.title)}</span>${e.label ? `<span class="rp">${esc(e.label)}</span>` : ''}</span>`;
+    if (!e.label && it && 'toggle' in it) return toggleRowHTML(it, body);
+    return `<button class="r sr" type="button" data-i="${i}">${body}<span class="chev"></span></button>`;
+  }).join('')}</div>`;
+}
+
+function runSearch() {
+  const q = $('q').value.trim();
+  $('search').classList.toggle('has', $('q').value.length > 0);
+  $('menu').hidden = !!q;
+  $('results').hidden = !q;
+  if (q) renderResults(q);
+}
+
+/* 오른쪽 화면 그리기 */
+function currentPage() {
+  const item = items[nav.id];
+  const top = nav.stack[nav.stack.length - 1];
+  if (top) return { item: { title: top.title }, page: top.page, heroOn: false };
+  const page = PAGES[item.page || item.title] || {};
+  return { item, page, heroOn: page.hero !== false };
+}
+
+function render(anim) {
+  REG = [];
+  CUR_PATH = [nav.id, ...nav.stack.map((s) => s.title)];
+  const { item, page, heroOn } = currentPage();
+  const qOn = !!page.navSearch && !nav.stack.length;
+  if (!qOn && APPQ) { APPQ = ''; $('dqi').value = ''; }
+  $('dq').hidden = !qOn;
+  if (qOn) $('dqi').placeholder = page.navSearch;
+  $('dnav').classList.toggle('lt', qOn);
+  let html = heroOn ? hero(item, page) : '';
+  if (qOn && APPQ.trim()) {
+    const ql = APPQ.trim().toLowerCase();
+    const rows = (page.searchRows ? page.searchRows() : []).filter((r) => r.title.toLowerCase().includes(ql));
+    CUR_SIDX = 'q';
+    CUR_SDEF = undefined;
+    html += rows.length ? `<div class="sec"><div class="card">${rows.map(irow).join('')}</div></div>` : `<div class="nores">‘${esc(APPQ.trim())}’에 대한 결과 없음</div>`;
+  } else {
+    (page.sections || []).forEach((s, i) => { html += section(s, i, page); });
+  }
+  const dc = $('dcontent');
+  dc.innerHTML = html;
+  $('dt').textContent = item.title;
+  $('dnav').classList.toggle('fixed', !heroOn);
+  $('dnav').classList.toggle('canback', nav.stack.length > 0);
+  $('dbtn').textContent = page.button || '';
+  $('dbtn').style.visibility = page.button ? 'visible' : 'hidden';
+  $('dbtn').style.display = qOn ? 'none' : '';
+  dc.classList.remove('anim-push', 'anim-pop');
+  if (anim) { $('dnav').classList.remove('scrolled', 'titled'); void dc.offsetWidth; dc.classList.add(anim); }
+}
+
+function refresh() {
+  if (!nav.id) return;
+  const y = $('detail').scrollTop;
+  render(null);
+  $('detail').scrollTop = y;
+  onDetailScroll();
+}
+function updateAll() {
+  renderMenu();
+  if ($('q').value.trim()) runSearch();
+  refresh();
+}
+
+function push(row, anim = true) {
+  nav.stack.push({ title: row.title, page: row.page, scroll: $('detail').scrollTop });
+  render(anim ? 'anim-push' : null);
+  $('detail').scrollTop = 0;
+  onDetailScroll();
+}
+
+function pop() {
+  const s = nav.stack.pop();
+  render('anim-pop');
+  $('detail').scrollTop = s ? s.scroll : 0;
+  onDetailScroll();
+}
+
+function findRow(page, title) {
+  return allRows(page).find((r) => r.title === title && r.page);
+}
+
+function flash(title) {
+  const el = [...$('dcontent').querySelectorAll('[data-t]')].find((n) => n.dataset.t === title);
+  if (!el) return;
+  setTimeout(() => {
+    el.scrollIntoView({ block: 'center', behavior: 'smooth' });
+    el.classList.remove('flash'); void el.offsetWidth; el.classList.add('flash');
+  }, wide.matches ? 60 : 420);
+}
+
+function show(id, path = [], focus = null) {
+  const item = items[id];
+  if (!item || 'toggle' in item) return;
+  nav.id = id;
+  nav.stack = [];
+  if (id === 'Wi-Fi') WIFI_ON_AT = Date.now();
+  try { localStorage.setItem('settings.last', id); } catch (e) {}
+  render(null);
+  $('detail').scrollTop = 0;
+  path.forEach((t) => { const row = findRow(currentPage().page, t); if (row) push(row, false); });
+  onDetailScroll();
+  markMenu();
+  if (focus) flash(focus);
+}
+
+function showStart() {
+  let id = null;
+  try { id = localStorage.getItem('settings.last'); } catch (e) {}
+  if (!id || !items[id] || 'toggle' in items[id]) id = items[SETTINGS.startPage] ? SETTINGS.startPage : 'profile';
+  show(id);
+}
+
+/* 스크린 타임: 이 앱을 화면에 열어 둔 시간 기록 (활동을 켰을 때만) */
+const USAGE_KEY = 'settings.usage.v1';
+let USAGE = {};
+try { USAGE = JSON.parse(localStorage.getItem(USAGE_KEY) || '{}') || {}; } catch (e) { USAGE = {}; }
+const dayKey = (d = new Date()) => `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`;
+let lastTick = Date.now();
+function tickUsage() {
+  const now = Date.now();
+  if (get('stActivity') && document.visibilityState === 'visible') {
+    const k = dayKey();
+    USAGE[k] = (USAGE[k] || 0) + Math.min(30, Math.max(0, (now - lastTick) / 1000));
+    try { localStorage.setItem(USAGE_KEY, JSON.stringify(USAGE)); } catch (e) {}
+  }
+  lastTick = now;
+}
+setInterval(tickUsage, 5000);
+document.addEventListener('visibilitychange', () => { lastTick = Date.now(); });
+function fmtDur(sec) {
+  if (sec < 60) return sec > 0 ? '1분 미만' : '0분';
+  const m = Math.round(sec / 60);
+  return m >= 60 ? `${Math.floor(m / 60)}시간 ${m % 60}분` : `${m}분`;
+}
+
+/* 가운데 뜨는 안내 창 */
+const SHEETS = {
+  stActivity: {
+    icon: '<svg viewBox="0 0 72 72" aria-hidden="true"><circle cx="30" cy="17" r="11" fill="currentColor"/><path d="M8 52c0-11.5 9.5-19 22-19 5.5 0 10 1.2 13.5 3.3V52z" fill="currentColor"/><path d="M45 38h17M45 64h17M47.5 38c0 9 12 9.5 12 13s-12 4-12 13M59.5 38c0 9-12 9.5-12 13s12 4 12 13" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+    title: '앱 및 웹사이트 활동',
+    desc: '사용자의 스크린 타임에 관한 심층 분석 리포트를 받고, 관리하려는 대상에 시간 제한을 설정합니다.',
+    feats: [
+      ['chart', '주간 리포트', '기기의 스크린 타임에 관한 주간 개요 알림을 받습니다.'],
+      ['window', '시간 지정', '매일 화면을 보지 않는 시간을 설정합니다.'],
+      ['hourglass', '허용 시간', '관리하려는 앱 카테고리에 대해 일일 사용 시간 제한을 설정합니다.'],
+    ],
+    on: '앱 및 웹사이트 활동 켜기',
+    off: '지금 안 함',
+  },
+};
+function openSheet(key) {
+  const s = SHEETS[key];
+  if (!s) return;
+  const el = $('sheet');
+  el.innerHTML = `<div class="sbox" role="dialog" aria-modal="true" aria-label="${esc(s.title)}"><div class="sic">${s.icon}</div><h2>${esc(s.title)}</h2><div class="sd">${esc(s.desc)}</div>${s.feats.map(([ic, t, d]) => `<div class="sfeat">${ICONS[ic] || ''}<div><b>${esc(t)}</b><span>${esc(d)}</span></div></div>`).join('')}<div class="sbtns"><button class="sbtn pri" type="button" data-sheet="on">${esc(s.on)}</button><button class="sbtn alt" type="button" data-sheet="off">${esc(s.off)}</button></div></div>`;
+  el.dataset.key = key;
+  el.hidden = false;
+}
+function closeSheet() { $('sheet').hidden = true; }
+
+/* 누르기 처리 */
+function flipToggle(el) {
+  const key = el.dataset.tg;
+  const v = !get(key);
+  const sw = el.querySelector('.tg');
+  if (sw) sw.classList.toggle('on', v);
+  set(key, v);
+  speak(`${el.dataset.t || ''} ${v ? '켬' : '끔'}`);
+  if (el.classList.contains('afig')) updateAll();
+  else setTimeout(updateAll, 260);
+}
+function doAction(a) {
+  if (a === 'stOff') { set('stActivity', false); updateAll(); toast('앱 및 웹사이트 활동이 꺼졌습니다'); return; }
+  if (a === 'reset') {
+    STATE = {};
+    save();
+    WIFI_ON_AT = Date.now();
+    applyEffects();
+    updateAll();
+    toast('설정이 재설정되었습니다');
+  }
+}
+
+applyEffects();
+renderMenu();
+buildIndex();
+if (wide.matches) showStart();
+
+$('list').addEventListener('click', (e) => {
+  const tg = e.target.closest('[data-tg]');
+  if (tg) { flipToggle(tg); return; }
+  const btn = e.target.closest('button.r');
+  if (!btn) return;
+  speak((btn.querySelector('.rl, .pn, .rt') || {}).textContent);
+  if (btn.dataset.i) {
+    const hit = INDEX[+btn.dataset.i];
+    $('results').querySelectorAll('.r.on').forEach((el) => el.classList.remove('on'));
+    btn.classList.add('on');
+    show(hit.id, hit.path, hit.label ? hit.title : null);
+  } else {
+    show(btn.dataset.id);
+  }
+  if (!wide.matches) { $('q').blur(); $('app').classList.add('open'); }
+});
+$('dcontent').addEventListener('click', (e) => {
+  const act = e.target.closest('[data-act]');
+  if (act) { doAction(act.dataset.act); return; }
+  const ap = e.target.closest('[data-ap]');
+  if (ap) { set('appearance', ap.dataset.ap); speak(ap.dataset.t); updateAll(); return; }
+  const tg = e.target.closest('[data-tg]');
+  if (tg) { flipToggle(tg); return; }
+  const ch = e.target.closest('[data-ch]');
+  if (ch) { set(ch.dataset.ch, ch.dataset.v); if (ch.dataset.snd) playTone(ch.dataset.v); speak(ch.dataset.v); updateAll(); return; }
+  const mc = e.target.closest('[data-mc]');
+  if (mc) { set(mc.dataset.mc, !get(mc.dataset.mc)); speak(mc.dataset.t); updateAll(); return; }
+  const k = e.target.closest('[data-k]');
+  if (k && REG[+k.dataset.k]) { speak(k.dataset.t); push(REG[+k.dataset.k]); if (k.dataset.need && !get(k.dataset.need)) openSheet(k.dataset.need); return; }
+  const t = e.target.closest('[data-t]');
+  if (t) speak(t.dataset.t);
+});
+
+$('sheet').addEventListener('click', (e) => {
+  const b = e.target.closest('[data-sheet]');
+  const key = $('sheet').dataset.key;
+  if (b && b.dataset.sheet === 'on') {
+    lastTick = Date.now();
+    set(key, true);
+    closeSheet();
+    updateAll();
+    toast('앱 및 웹사이트 활동이 켜졌습니다');
+    return;
+  }
+  if ((b && b.dataset.sheet === 'off') || e.target.id === 'sheet') {
+    closeSheet();
+    if (nav.stack.length) pop();
+  }
+});
+
+/* 막대(밝기·음량 등) 끌어서 바꾸기 */
+let sl = null;
+function moveSlider(e) {
+  const r = sl.trk.getBoundingClientRect();
+  const v = Math.max(0, Math.min(1, (e.clientX - r.left) / r.width));
+  sl.trk.querySelector('i').style.width = `${v * 100}%`;
+  sl.trk.querySelector('b').style.left = `${v * 100}%`;
+  STATE[sl.key] = Math.round(v * 1000) / 1000;
+  applyEffects();
+}
+$('dcontent').addEventListener('pointerdown', (e) => {
+  const trk = e.target.closest('.trk');
+  if (!trk) return;
+  e.preventDefault();
+  sl = { trk, key: trk.dataset.sl };
+  moveSlider(e);
+});
+document.addEventListener('pointermove', (e) => { if (sl) { e.preventDefault(); moveSlider(e); } }, { passive: false });
+const endSlider = () => { if (sl) { save(); sl = null; } };
+document.addEventListener('pointerup', endSlider);
+document.addEventListener('pointercancel', endSlider);
+
+$('q').addEventListener('input', runSearch);
+$('dqi').addEventListener('input', () => { APPQ = $('dqi').value; refresh(); });
+$('dqi').addEventListener('keydown', (e) => { if (get('kbClick')) keyClick(); if (e.key === 'Enter') $('dqi').blur(); });
+$('q').addEventListener('keydown', (e) => { if (get('kbClick')) keyClick(); if (e.key === 'Enter') $('q').blur(); });
+$('qclear').addEventListener('click', (e) => { e.preventDefault(); $('q').value = ''; runSearch(); $('q').focus(); });
+$('back').addEventListener('click', () => { if (nav.stack.length) pop(); else $('app').classList.remove('open'); });
+$('list').addEventListener('scroll', () => $('lnav').classList.toggle('scrolled', $('list').scrollTop > 40), { passive: true });
+function onDetailScroll() {
+  const y = $('detail').scrollTop;
+  $('dnav').classList.toggle('scrolled', y > 6);
+  $('dnav').classList.toggle('titled', y > 90);
+}
+$('detail').addEventListener('scroll', onDetailScroll, { passive: true });
+wide.addEventListener('change', () => { if (wide.matches && !nav.id) showStart(); });
+darkMQ.addEventListener('change', () => { applyEffects(); if (nav.id) refresh(); });
+
+// 왼쪽 가장자리에서 밀기: 하위 화면이면 한 단계 뒤로, 폰에서 맨 위 화면이면 목록으로 (손가락을 따라옴)
+let drag = null;
+const detailEl = $('detail');
+const listEl = $('list');
+detailEl.addEventListener('touchstart', (e) => {
+  if (sl) return;
+  const t = e.touches[0];
+  const edge = t.clientX - detailEl.getBoundingClientRect().left;
+  if (edge > 30) return;
+  if (nav.stack.length) { drag = { mode: 'pop', x: t.clientX, y: t.clientY, dx: 0, on: false }; return; }
+  if (wide.matches || !$('app').classList.contains('open')) return;
+  drag = { mode: 'close', x: t.clientX, y: t.clientY, dx: 0, lastX: t.clientX, lastT: e.timeStamp, v: 0, on: false };
+}, { passive: true });
+detailEl.addEventListener('touchmove', (e) => {
+  if (!drag) return;
+  const t = e.touches[0];
+  const dx = t.clientX - drag.x;
+  const dy = t.clientY - drag.y;
+  if (!drag.on) {
+    if (Math.abs(dy) > Math.abs(dx)) { drag = null; return; }
+    if (dx < 6) return;
+    drag.on = true;
+    if (drag.mode === 'close') $('app').classList.add('dragging');
+  }
+  e.preventDefault();
+  drag.dx = Math.max(0, dx);
+  if (drag.mode === 'pop') {
+    $('dcontent').style.transform = `translateX(${drag.dx * 0.6}px)`;
+    $('dcontent').style.opacity = String(1 - Math.min(0.6, drag.dx / 600));
+    return;
+  }
+  const dt = Math.max(1, e.timeStamp - drag.lastT);
+  drag.v = (t.clientX - drag.lastX) / dt;
+  drag.lastX = t.clientX;
+  drag.lastT = e.timeStamp;
+  detailEl.style.transform = `translateX(${drag.dx}px)`;
+  listEl.style.transform = `translateX(${-30 + 30 * Math.min(1, drag.dx / window.innerWidth)}%)`;
+}, { passive: false });
+const endDrag = () => {
+  if (!drag) return;
+  if (drag.mode === 'pop') {
+    $('dcontent').style.transform = '';
+    $('dcontent').style.opacity = '';
+    if (drag.on && drag.dx > 80) pop();
+    drag = null;
+    return;
+  }
+  const close = drag.on && (drag.dx > window.innerWidth * 0.35 || drag.v > 0.5);
+  $('app').classList.remove('dragging');
+  detailEl.style.transform = '';
+  listEl.style.transform = '';
+  if (close) $('app').classList.remove('open');
+  drag = null;
+};
+detailEl.addEventListener('touchend', endDrag);
+detailEl.addEventListener('touchcancel', endDrag);
+
+// 두 손가락으로 확대되는 것 막기 (앱처럼 고정된 화면)
+document.addEventListener('gesturestart', (e) => e.preventDefault());
+document.addEventListener('dblclick', (e) => e.preventDefault());
+
+// iOS에서 누를 때 눌리는 효과가 보이게
+document.addEventListener('touchstart', () => {}, { passive: true });
+
+// 인터넷 없이도 열리게: 처음 한 번 인터넷으로 열 때 파일을 기기에 저장해 둬요 (sw.js)
+if ('serviceWorker' in navigator && location.protocol !== 'file:') {
+  navigator.serviceWorker.register('./sw.js').catch(() => {});
+}
+</script>
+</body>
+</html>
